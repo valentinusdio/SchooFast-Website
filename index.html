@@ -803,59 +803,59 @@
     }
 
 }
-            /* ======================
-   SIDEBAR RESPONSIVE
-====================== */
-
-.sidebar {
-    width: 260px;
-    min-height: 100vh;
-    position: fixed;
-    left: 0;
-    top: 0;
-    transition: 0.3s ease;
-    z-index: 1000;
-}
-
-/* Content geser mengikuti sidebar */
-.main-content {
-    margin-left: 260px;
-    transition: 0.3s ease;
-}
-
-/* Tombol hamburger */
-.menu-toggle {
-    display: none;
-    font-size: 24px;
-    cursor: pointer;
-    padding: 10px;
-}
-
-/* ======================
-   MOBILE MODE
-====================== */
+        /* ==============================
+   FORCE MOBILE FIX
+============================== */
 
 @media (max-width: 768px) {
 
+    /* Sidebar full screen overlay */
     .sidebar {
-        left: -260px; /* sembunyikan */
+        position: fixed !important;
+        width: 260px !important;
+        height: 100vh !important;
+        left: -260px !important;
+        top: 0;
+        z-index: 2000;
+        transition: 0.3s ease;
     }
 
     .sidebar.active {
-        left: 0;
+        left: 0 !important;
     }
 
+    /* Hapus margin konten */
     .main-content {
-        margin-left: 0;
+        margin-left: 0 !important;
+        width: 100% !important;
     }
 
-    .menu-toggle {
-        display: block;
+    /* Card jadi 1 kolom */
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+        grid-template-columns: 1fr !important;
     }
+
+    /* Stats card responsif */
+    .stats-container {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 15px;
+    }
+
+    /* Hero section responsif */
+    .hero-section {
+        padding: 20px !important;
+        text-align: left !important;
+    }
+
+}
 
 }
     </style>
 </body>
 
 </html>
+
 
