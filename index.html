@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCHOOFAST - On-Demand Service</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: '#1e3a8a',
+                        accent: '#3b82f6',
+                        sidebar: '#0f172a',
+                        bgMain: '#f1f5f9'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #f1f5f9; font-family: 'Inter', sans-serif; }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .active-nav { background: rgba(255, 255, 255, 0.1); border-left: 4px solid #3b82f6; color: white !important; }
+        .service-card { transition: all 0.3s ease; border: 1px solid #e2e8f0; }
+        .service-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #3b82f6; ring: 2px; ring-color: #3b82f6; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased overflow-hidden">
+
+    <!-- LAYER 1: AUTHENTICATION -->
+    <div id="auth-container" class="fixed inset-0 z-[100] bg-slate-100 flex items-center justify-center p-4">
+        
+        <!-- LOGIN SECTION -->
+        <section id="auth-login" class="w-full max-w-md bg-white rounded-3xl shadow-2xl p-10 animate-fade-in hidden">
+            <div class="flex flex-col items-center mb-8">
+                <div class="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg mb-4 text-white text-3xl">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800">SCHOOFAST</h2>
+                <p class="text-slate-500 text-sm mt-1">Silakan masuk ke akun Anda</p>
+            </div>
+            <form onsubmit="handleAuthAction(event, 'login')" class="space-y-5">
+                <div>
+                    <label class="text-xs font-bold text-slate-400 uppercase block mb-1.5 ml-1">Username</label>
+                    <input type="text" id="login-username" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-primary transition-all" placeholder="Username">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-400 uppercase block mb-1.5 ml-1">Password</label>
+                    <input type="password" id="login-password" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-primary transition-all" placeholder="••••••••">
+                </div>
+                <button type="submit" class="w-full bg-primary text-white font-bold py-4 rounded-xl hover:bg-blue-900 shadow-lg transition-all">Login</button>
+            </form>
+            <p class="mt-8 text-center text-sm text-slate-500">
+                Belum punya akun? <button onclick="toggleAuthView('register')" class="text-accent font-bold">Daftar</button>
+            </p>
+        </section>
+
+        <!-- REGISTER SECTION -->
+        <section id="auth-register" class="w-full max-w-md bg-white rounded-3xl shadow-2xl p-10 animate-fade-in hidden">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-slate-800">Daftar Akun</h2>
+                <p class="text-slate-500 text-sm">Bergabung dengan SCHOOFAST</p>
+            </div>
+            <form onsubmit="handleAuthAction(event, 'register')" class="space-y-5">
+                <input type="text" id="reg-username" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl" placeholder="Username">
+                <input type="password" id="reg-password" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl" placeholder="Password">
+                <button type="submit" class="w-full bg-slate-800 text-white font-bold py-4 rounded-xl shadow-lg">Buat Akun</button>
+            </form>
+            <button onclick="toggleAuthView('login')" class="mt-6 w-full text-center text-sm text-slate-500 font-medium">Kembali ke Login</button>
+        </section>
+
+        <!-- ROLE SELECTION -->
+        <section id="auth-role" class="w-full max-w-2xl animate-fade-in hidden">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-slate-800">Pilih Role Akses</h2>
+                <p class="text-slate-500 mt-2">Masuk sebagai siapa hari ini?</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <button onclick="selectUserRole('admin')" class="bg-white p-8 rounded-3xl shadow-xl hover:ring-4 ring-primary transition-all text-left group">
+                    <div class="w-14 h-14 bg-blue-100 text-primary rounded-2xl flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-all">
+                        <i class="fa-solid fa-chalkboard-user text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800">Guru / Admin</h3>
+                    <p class="text-slate-500 text-sm mt-2">Kelola antrian, verifikasi dokumen, dan pantau fasilitas sekolah.</p>
+                </button>
+                <button onclick="selectUserRole('student')" class="bg-white p-8 rounded-3xl shadow-xl hover:ring-4 ring-accent transition-all text-left group">
+                    <div class="w-14 h-14 bg-slate-100 text-slate-600 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-accent group-hover:text-white transition-all">
+                        <i class="fa-solid fa-user-graduate text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800">Siswa</h3>
+                    <p class="text-slate-500 text-sm mt-2">Buat laporan kerusakan, ajukan UKS, atau pinjam buku perpus.</p>
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <!-- LAYER 2: MAIN APP -->
+    <div id="app" class="flex h-screen w-full hidden">
+        
+        <!-- SIDEBAR -->
+        <aside class="w-64 md:w-72 bg-sidebar text-slate-400 flex flex-col shrink-0">
+            <div class="p-6 flex items-center gap-3">
+                <div class="w-10 h-10 bg-accent rounded-lg flex items-center justify-center text-white text-xl shadow-lg">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-white text-lg tracking-tight">SCHOOFAST</h1>
+                    <p class="text-[10px] font-bold tracking-widest text-slate-500 uppercase">On-Demand Service</p>
+                </div>
+            </div>
+
+            <nav class="flex-1 px-4 mt-6 space-y-1">
+                <button onclick="navTo('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center px-4 py-3 rounded-lg hover:text-white transition-all">
+                    <span class="w-8 text-center text-sm"><i class="fa-solid fa-grid-2"></i></span>
+                    <span class="text-sm font-medium ml-2">Dashboard Overview</span>
+                </button>
+
+                <div class="pt-6 pb-2 px-4 text-[10px] font-bold text-slate-600 uppercase tracking-widest">Layanan Akademik</div>
+                <button onclick="navTo('schoo-med')" id="nav-schoo-med" class="nav-item w-full flex items-center px-4 py-3 rounded-lg hover:text-white transition-all">
+                    <i class="fa-solid fa-heart-pulse w-6"></i>
+                    <span class="text-sm font-medium ml-2">SCHOO-MED (UKS)</span>
+                </button>
+                <button onclick="navTo('schoo-lib')" id="nav-schoo-lib" class="nav-item w-full flex items-center px-4 py-3 rounded-lg hover:text-white transition-all">
+                    <i class="fa-solid fa-book-open w-6"></i>
+                    <span class="text-sm font-medium ml-2">SCHOO-LIB (Pustaka)</span>
+                </button>
+
+                <div class="pt-6 pb-2 px-4 text-[10px] font-bold text-slate-600 uppercase tracking-widest">Fasilitas & Admin</div>
+                <button onclick="navTo('schoo-fix')" id="nav-schoo-fix" class="nav-item w-full flex items-center px-4 py-3 rounded-lg hover:text-white transition-all">
+                    <i class="fa-solid fa-screwdriver-wrench w-6"></i>
+                    <span class="text-sm font-medium ml-2">SCHOO-FIX (Sarpras)</span>
+                </button>
+                <button onclick="navTo('schoo-gear')" id="nav-schoo-gear" class="nav-item w-full flex items-center px-4 py-3 rounded-lg hover:text-white transition-all">
+                    <i class="fa-solid fa-layer-group w-6"></i>
+                    <span class="text-sm font-medium ml-2">SCHOO-GEAR (Aset)</span>
+                </button>
+                <button onclick="navTo('schoo-adm')" id="nav-schoo-adm" class="nav-item w-full flex items-center px-4 py-3 rounded-lg hover:text-white transition-all">
+                    <i class="fa-solid fa-file-invoice w-6"></i>
+                    <span class="text-sm font-medium ml-2">SCHOO-ADM (Surat)</span>
+                </button>
+            </nav>
+
+            <div class="p-6 border-t border-slate-800">
+                <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 py-3 bg-slate-800/50 hover:bg-red-500/20 hover:text-red-400 rounded-xl text-xs font-bold transition-all border border-slate-700">
+                    <i class="fa-solid fa-power-off"></i> Reset Sistem
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 flex flex-col min-w-0 bg-bgMain h-screen overflow-hidden">
+            
+            <!-- TOP NAVBAR -->
+            <header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
+                <div>
+                    <h2 id="page-title" class="text-xl font-bold text-slate-800">Dashboard Overview</h2>
+                    <p class="text-xs text-slate-400 font-medium">Selamat datang di Panel Layanan Terpadu</p>
+                </div>
+                <div class="flex items-center gap-6">
+                    <div class="bg-slate-50 border border-slate-200 rounded-full px-4 py-1.5 flex items-center gap-3">
+                        <span class="text-xs font-bold text-slate-600">User: <span id="display-role">Siswa</span></span>
+                        <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center font-bold shadow-lg shadow-blue-500/30" id="user-initial">
+                        S
+                    </div>
+                </div>
+            </header>
+
+            <!-- SCROLLABLE CONTENT -->
+            <div class="flex-1 overflow-y-auto p-8" id="view-container">
+                
+                <!-- VIEW: DASHBOARD -->
+                <section id="view-dashboard" class="content-view animate-fade-in">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                            <div class="flex-1">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">UKS Queue</p>
+                                <h3 class="text-3xl font-bold" id="stat-med">0</h3>
+                                <p class="text-xs text-slate-400 mt-1">Pasien menunggu</p>
+                            </div>
+                            <div class="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-xl">
+                                <i class="fa-solid fa-heart-pulse"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                            <div class="flex-1">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Laporan</p>
+                                <h3 class="text-3xl font-bold" id="stat-fix">0</h3>
+                                <p class="text-xs text-slate-400 mt-1">Sarpras pending</p>
+                            </div>
+                            <div class="w-12 h-12 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center text-xl">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                            <div class="flex-1">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Peminjaman</p>
+                                <h3 class="text-3xl font-bold" id="stat-lib">0</h3>
+                                <p class="text-xs text-slate-400 mt-1">Buku aktif</p>
+                            </div>
+                            <div class="w-12 h-12 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center text-xl">
+                                <i class="fa-solid fa-book"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                            <div class="flex-1">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Dokumen</p>
+                                <h3 class="text-3xl font-bold" id="stat-adm">0</h3>
+                                <p class="text-xs text-slate-400 mt-1">Proses persetujuan</p>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-50 text-purple-500 rounded-full flex items-center justify-center text-xl">
+                                <i class="fa-solid fa-file-invoice"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-[2rem] p-10 text-white relative overflow-hidden shadow-2xl">
+                        <div class="relative z-10 max-w-2xl">
+                            <h2 class="text-3xl font-bold mb-4">Sistem Layanan Sekolah Terintegrasi</h2>
+                            <p class="text-blue-100 leading-relaxed text-sm">
+                                SCHOOFAST hadir dengan antarmuka baru yang lebih modern. Akses layanan UKS, Perpustakaan, Sarpras, dan Administrasi dalam satu pintu. Efisiensi untuk civitas akademika.
+                            </p>
+                        </div>
+                        <div class="absolute right-0 bottom-0 opacity-10 transform translate-x-1/4 translate-y-1/4">
+                            <i class="fa-solid fa-bolt text-[20rem]"></i>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW: SCHOO-FIX (SARPRAS) -->
+                <section id="view-schoo-fix" class="content-view hidden animate-fade-in">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-1">
+                            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                                <div class="bg-orange-500 p-6 text-white">
+                                    <h3 class="font-bold text-xl">Lapor Kerusakan</h3>
+                                    <p class="text-orange-100 text-xs mt-1">Tim teknis segera memproses laporan Anda.</p>
+                                </div>
+                                <form id="form-fix" class="p-6 space-y-4">
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Lokasi</label>
+                                        <input type="text" id="fix-loc" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl" placeholder="Ex: Lab Komputer 2">
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Objek</label>
+                                        <input type="text" id="fix-item" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl" placeholder="Ex: AC, Kursi, Proyektor">
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Deskripsi</label>
+                                        <textarea id="fix-desc" rows="3" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl" placeholder="Jelaskan detail kerusakan..."></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Urgensi</label>
+                                        <select id="fix-urgency" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
+                                            <option value="Low (Minor)">Low (Minor)</option>
+                                            <option value="Medium">Medium</option>
+                                            <option value="High (Critical)">High (Critical)</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-black transition-all">Kirim Laporan</button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-2 space-y-4" id="list-fix"></div>
+                    </div>
+                </section>
+
+                <!-- VIEW: SCHOO-MED (UKS) -->
+                <section id="view-schoo-med" class="content-view hidden animate-fade-in">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-1">
+                            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                                <div class="flex items-center gap-3 mb-8">
+                                    <div class="w-10 h-10 bg-red-100 text-red-500 rounded-xl flex items-center justify-center"><i class="fa-solid fa-ambulance"></i></div>
+                                    <h3 class="font-bold text-lg">Panggilan Darurat</h3>
+                                </div>
+                                <form id="form-med" class="space-y-5">
+                                    <input type="text" id="med-name" placeholder="Nama Lengkap" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
+                                    <select id="med-loc" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
+                                        <option>Kantin Utara</option>
+                                        <option>Lapangan Upacara</option>
+                                        <option>Kelas XII IPA 1</option>
+                                        <option>Perpustakaan</option>
+                                    </select>
+                                    <select id="med-urgency" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
+                                        <option value="LEVEL 1">🟢 Ringan (Luka Lecet)</option>
+                                        <option value="LEVEL 2">🟡 Sedang (Demam/Pusing)</option>
+                                        <option value="LEVEL 3">🔴 Berat (Pingsan/Cedera)</option>
+                                    </select>
+                                    <p class="text-[10px] italic text-slate-400">*Prioritas dihitung otomatis berdasarkan algoritma medis.</p>
+                                    <button type="submit" class="w-full bg-red-600 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 shadow-lg shadow-red-500/20 hover:bg-red-700">
+                                        <i class="fa-solid fa-paper-plane"></i> Kirim Panggilan
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-2">
+                            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                                <div class="px-8 py-6 border-b border-slate-100 flex justify-between items-center">
+                                    <h3 class="font-bold text-slate-800">Antrian Penanganan</h3>
+                                    <span class="text-[10px] text-emerald-500 font-bold flex items-center gap-2"><div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div> Live Update</span>
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm">
+                                        <thead class="bg-slate-50 text-[10px] font-bold text-slate-400 uppercase">
+                                            <tr>
+                                                <th class="px-8 py-4 text-left">Waktu</th>
+                                                <th class="px-8 py-4 text-left">Pasien & Lokasi</th>
+                                                <th class="px-8 py-4 text-left">Severity</th>
+                                                <th class="px-8 py-4 text-left">Status</th>
+                                                <th class="px-8 py-4 text-center">Tindakan</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="list-med" class="divide-y divide-slate-50"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW: SCHOO-LIB (PUSTAKA) -->
+                <section id="view-schoo-lib" class="content-view hidden animate-fade-in">
+                    <div class="flex items-center justify-between mb-8">
+                        <div class="relative w-full max-w-md">
+                            <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" onkeyup="renderLib(this.value)" placeholder="Cari judul buku, penulis..." class="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                        </div>
+                        <div class="bg-orange-50 text-orange-600 px-4 py-2 rounded-xl text-xs font-bold border border-orange-100">
+                            <i class="fa-solid fa-layer-group mr-2"></i> Total Koleksi: 5 Judul
+                        </div>
+                    </div>
+                    <div id="grid-books" class="grid grid-cols-1 md:grid-cols-4 gap-6"></div>
+                </section>
+
+                <!-- VIEW: SCHOO-GEAR (ASET) -->
+                <section id="view-schoo-gear" class="content-view hidden animate-fade-in">
+                    <div class="bg-white p-10 rounded-3xl shadow-sm border border-slate-200 mb-8">
+                        <h3 class="font-bold text-xl mb-2">Booking Ruang & Alat</h3>
+                        <p class="text-xs text-slate-400 mb-8">Sistem otomatis mencegah bentrok jadwal (Double Booking).</p>
+                        <form id="form-gear" class="grid grid-cols-1 md:grid-cols-4 gap-6 bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block tracking-widest">Aset / Ruang</label>
+                                <select id="gear-item" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl">
+                                    <option>Proyektor Portable A</option>
+                                    <option>Aula Sekolah</option>
+                                    <option>Lab Komputer 1</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block tracking-widest">Tanggal</label>
+                                <input type="date" id="gear-date" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block tracking-widest">Waktu Mulai</label>
+                                <select id="gear-time" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl">
+                                    <option>08:00 WIB</option>
+                                    <option>10:00 WIB</option>
+                                    <option>13:00 WIB</option>
+                                </select>
+                            </div>
+                            <div class="flex items-end">
+                                <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-500/20 hover:bg-emerald-700">Book Now</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                        <table class="w-full text-xs">
+                            <thead class="bg-slate-50 text-slate-400 font-bold uppercase border-b">
+                                <tr>
+                                    <th class="px-8 py-5 text-left">Aset</th>
+                                    <th class="px-8 py-5 text-left">Tanggal</th>
+                                    <th class="px-8 py-5 text-left">Waktu</th>
+                                    <th class="px-8 py-5 text-left">Peminjam</th>
+                                    <th class="px-8 py-5 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="list-gear" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- VIEW: SCHOO-ADM -->
+                <section id="view-schoo-adm" class="content-view hidden animate-fade-in">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-1">
+                            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                                <h3 class="font-bold text-xl mb-2">Buat Dokumen Baru</h3>
+                                <p class="text-xs text-slate-400 mb-8">Dokumen akan melalui 4 tahap persetujuan.</p>
+                                <form id="form-adm" class="space-y-6">
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block">Jenis Surat</label>
+                                        <select id="adm-type" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
+                                            <option>Surat Izin Kegiatan</option>
+                                            <option>Surat Keterangan Aktif</option>
+                                            <option>Legalitas Ijazah</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block">Judul / Perihal</label>
+                                        <input type="text" id="adm-title" required placeholder="Isi perihal surat..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
+                                    </div>
+                                    <button type="submit" class="w-full bg-purple-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-purple-500/20 hover:bg-purple-700 transition-all">Ajukan Dokumen</button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-2 space-y-4" id="list-adm"></div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-8 py-4 rounded-2xl shadow-2xl transition-all duration-300 translate-y-32 opacity-0 z-[200] flex items-center gap-4 border border-slate-700">
+        <div id="toast-icon" class="text-accent"><i class="fa-solid fa-circle-check"></i></div>
+        <p id="toast-msg" class="text-sm font-medium tracking-tight"></p>
+    </div>
+
+    <script>
+        // AUTH SYSTEM
+        let authState = { isLoggedIn: false, currentUser: null, userRole: null };
+
+        function initAuth() {
+            const saved = localStorage.getItem('schoofast_session');
+            if (saved) {
+                authState = JSON.parse(saved);
+                if (authState.isLoggedIn) {
+                    authState.userRole ? showApp() : showAuthView('role');
+                    return;
+                }
+            }
+            showAuthView('login');
+        }
+
+        function showAuthView(view) {
+            document.getElementById('auth-container').classList.remove('hidden');
+            document.getElementById('app').classList.add('hidden');
+            ['login', 'register', 'role'].forEach(v => document.getElementById(`auth-${v}`).classList.add('hidden'));
+            document.getElementById(`auth-${view}`).classList.remove('hidden');
+        }
+
+        function toggleAuthView(view) { showAuthView(view); }
+
+        function handleAuthAction(e, type) {
+            e.preventDefault();
+            const users = JSON.parse(localStorage.getItem('schoofast_users') || '[]');
+            
+            if (type === 'register') {
+                const u = document.getElementById('reg-username').value;
+                const p = document.getElementById('reg-password').value;
+                if (users.find(x => x.username === u)) return showToast('Username sudah ada!');
+                users.push({ username: u, password: p });
+                localStorage.setItem('schoofast_users', JSON.stringify(users));
+                showToast('Akun berhasil dibuat!');
+                showAuthView('login');
+            } else {
+                const u = document.getElementById('login-username').value;
+                const p = document.getElementById('login-password').value;
+                const user = users.find(x => x.username === u && x.password === p);
+                if (user) {
+                    authState = { isLoggedIn: true, currentUser: u, userRole: null };
+                    saveSession();
+                    showAuthView('role');
+                } else {
+                    showToast('Cek kembali username/password');
+                }
+            }
+        }
+
+        function selectUserRole(role) {
+            authState.userRole = role;
+            saveSession();
+            showApp();
+        }
+
+        function saveSession() { localStorage.setItem('schoofast_session', JSON.stringify(authState)); }
+
+        function handleLogout() {
+            if(confirm("Apakah Anda ingin mereset sistem? Data Anda akan hilang.")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        function showApp() {
+            document.getElementById('auth-container').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            document.getElementById('display-role').innerText = authState.userRole === 'admin' ? 'Guru' : 'Siswa';
+            document.getElementById('user-initial').innerText = authState.currentUser.charAt(0).toUpperCase();
+            navTo('dashboard');
+        }
+
+        // STATE & LOGIC
+        let state = {
+            medRequests: [],
+            fixReports: [],
+            libLoans: [],
+            gearBookings: [],
+            admRequests: [],
+            books: [
+                {id: 1, title: 'Laskar Pelangi', author: 'Andrea Hirata', stock: 4, max: 5, category: 'FIKSI'},
+                {id: 2, title: 'Harry Potter & Phil. Stone', author: 'J.K. Rowling', stock: 2, max: 3, category: 'FIKSI'},
+                {id: 3, title: 'Bumi Manusia', author: 'Pramoedya A. Toer', stock: 1, max: 2, category: 'SASTRA'},
+                {id: 4, title: 'Introduction to AI', author: 'Stuart Russell', stock: 5, max: 5, category: 'TEKNOLOGI'},
+                {id: 5, title: 'Clean Code', author: 'Robert C. Martin', stock: 0, max: 3, category: 'TEKNOLOGI'}
+            ]
+        };
+
+        function navTo(viewId) {
+            document.querySelectorAll('.content-view').forEach(v => v.classList.add('hidden'));
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active-nav'));
+            document.getElementById(`nav-${viewId}`).classList.add('active-nav');
+            document.getElementById('page-title').innerText = viewId.replace('schoo-', '').toUpperCase().replace('DASHBOARD', 'Dashboard Overview');
+            renderAll();
+        }
+
+        function renderAll() {
+            renderMed();
+            renderFix();
+            renderLib();
+            renderGear();
+            renderAdm();
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('stat-med').innerText = state.medRequests.length;
+            document.getElementById('stat-fix').innerText = state.fixReports.length;
+            document.getElementById('stat-lib').innerText = state.libLoans.length;
+            document.getElementById('stat-adm').innerText = state.admRequests.length;
+        }
+
+        // UKS Logic
+        document.getElementById('form-med').onsubmit = (e) => {
+            e.preventDefault();
+            state.medRequests.push({
+                id: Date.now(),
+                name: document.getElementById('med-name').value,
+                loc: document.getElementById('med-loc').value,
+                urgency: document.getElementById('med-urgency').value,
+                time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+                status: 'WAITING'
+            });
+            e.target.reset();
+            renderMed();
+            updateStats();
+            showToast('Panggilan Darurat Terkirim');
+        };
+
+        function renderMed() {
+            document.getElementById('list-med').innerHTML = state.medRequests.map(r => `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-8 py-5 text-slate-400 font-medium">${r.time}</td>
+                    <td class="px-8 py-5">
+                        <p class="font-bold text-slate-800">${r.name}</p>
+                        <p class="text-[10px] text-slate-400 flex items-center gap-1"><i class="fa-solid fa-location-dot"></i> ${r.loc}</p>
+                    </td>
+                    <td class="px-8 py-5">
+                        <span class="px-2 py-1 rounded-md text-[9px] font-bold ${r.urgency === 'LEVEL 1' ? 'bg-green-100 text-green-600' : r.urgency === 'LEVEL 2' ? 'bg-amber-100 text-amber-600' : 'bg-red-100 text-red-600'}">
+                            ${r.urgency}
+                        </span>
+                    </td>
+                    <td class="px-8 py-5 font-bold text-[10px] text-slate-400 uppercase tracking-widest">${r.status}</td>
+                    <td class="px-8 py-5 text-center">
+                        ${authState.userRole === 'admin' ? `<button onclick="deleteMed(${r.id})" class="text-slate-300 hover:text-emerald-500 transition-colors"><i class="fa-solid fa-check-circle text-lg"></i></button>` : '-'}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function deleteMed(id) {
+            state.medRequests = state.medRequests.filter(r => r.id !== id);
+            renderMed();
+            updateStats();
+            showToast('Pasien telah ditangani');
+        }
+
+        // FIX Logic
+        document.getElementById('form-fix').onsubmit = (e) => {
+            e.preventDefault();
+            state.fixReports.push({
+                id: Date.now(),
+                item: document.getElementById('fix-item').value,
+                loc: document.getElementById('fix-loc').value,
+                desc: document.getElementById('fix-desc').value,
+                urgency: document.getElementById('fix-urgency').value,
+                date: new Date().toLocaleDateString(),
+                status: 'Pending'
+            });
+            e.target.reset();
+            renderFix();
+            updateStats();
+            showToast('Laporan Kerusakan Diterima');
+        };
+
+        function renderFix() {
+            document.getElementById('list-fix').innerHTML = state.fixReports.map(r => `
+                <div class="bg-white p-8 rounded-3xl shadow-sm border-l-4 border-slate-200 relative overflow-hidden ${r.urgency.includes('High') ? 'border-red-500' : ''}">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-bold text-lg text-slate-800">${r.item}</h4>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">${r.date}</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs text-orange-500 font-bold mb-4">
+                        <i class="fa-solid fa-location-dot"></i> ${r.loc}
+                    </div>
+                    <p class="text-slate-400 italic text-sm mb-6">"${r.desc || 'Tidak ada deskripsi'}"</p>
+                    <div class="flex items-center justify-between">
+                        <span class="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-bold">${r.urgency}</span>
+                        ${authState.userRole === 'admin' ? `<button onclick="deleteFix(${r.id})" class="text-xs text-red-400 font-bold hover:text-red-600">Hapus</button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteFix(id) {
+            state.fixReports = state.fixReports.filter(r => r.id !== id);
+            renderFix();
+            updateStats();
+        }
+
+        // LIB Logic
+        function renderLib(search = '') {
+            const filtered = state.books.filter(b => b.title.toLowerCase().includes(search.toLowerCase()));
+            document.getElementById('grid-books').innerHTML = filtered.map(b => `
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center service-card">
+                    <div class="w-12 h-12 bg-slate-50 text-slate-300 rounded-2xl flex items-center justify-center text-xl mb-6">
+                        <i class="fa-solid fa-feather"></i>
+                    </div>
+                    <span class="text-[9px] font-bold text-slate-300 uppercase mb-1">${b.category}</span>
+                    <h4 class="font-bold text-slate-800 leading-tight mb-1 truncate w-full">${b.title}</h4>
+                    <p class="text-[10px] text-slate-400 mb-6">${b.author}</p>
+                    <div class="w-full flex justify-between items-center mb-6 px-2">
+                        <span class="text-[10px] font-bold text-slate-400">Stok: ${b.stock}/${b.max}</span>
+                        <span class="text-[10px] font-bold ${b.stock > 0 ? 'text-emerald-500' : 'text-red-500'}">${b.stock > 0 ? 'Tersedia' : 'Habis'}</span>
+                    </div>
+                    <button onclick="pinjamBuku(${b.id})" ${b.stock === 0 ? 'disabled' : ''} class="w-full py-3 ${b.stock > 0 ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-300'} rounded-xl text-xs font-bold uppercase tracking-widest transition-all">
+                        Pinjam Buku
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function pinjamBuku(id) {
+            const b = state.books.find(x => x.id === id);
+            if(b.stock > 0) {
+                b.stock--;
+                state.libLoans.push({id: Date.now(), title: b.title});
+                renderLib();
+                updateStats();
+                showToast(`Meminjam: ${b.title}`);
+            }
+        }
+
+        // GEAR Logic
+        document.getElementById('form-gear').onsubmit = (e) => {
+            e.preventDefault();
+            state.gearBookings.push({
+                id: Date.now(),
+                item: document.getElementById('gear-item').value,
+                date: document.getElementById('gear-date').value || 'Hari ini',
+                time: document.getElementById('gear-time').value,
+                user: authState.currentUser,
+                status: 'Disetujui'
+            });
+            renderGear();
+            showToast('Booking Berhasil');
+        };
+
+        function renderGear() {
+            document.getElementById('list-gear').innerHTML = state.gearBookings.map(g => `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-8 py-5 font-bold text-slate-700">${g.item}</td>
+                    <td class="px-8 py-5 text-slate-500">${g.date}</td>
+                    <td class="px-8 py-5 text-slate-500">${g.time}</td>
+                    <td class="px-8 py-5 text-slate-500">${g.user}</td>
+                    <td class="px-8 py-5 text-center">
+                        <span class="px-3 py-1 bg-emerald-100 text-emerald-600 rounded-lg text-[10px] font-bold">${g.status}</span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // ADM Logic
+        document.getElementById('form-adm').onsubmit = (e) => {
+            e.preventDefault();
+            state.admRequests.push({
+                id: Date.now(),
+                title: document.getElementById('adm-title').value,
+                type: document.getElementById('adm-type').value,
+                status: 'Menunggu Verifikasi TU'
+            });
+            e.target.reset();
+            renderAdm();
+            updateStats();
+            showToast('Pengajuan Surat Terkirim');
+        };
+
+        function renderAdm() {
+            document.getElementById('list-adm').innerHTML = state.admRequests.map(r => `
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                    <span class="px-2 py-1 bg-purple-50 text-purple-600 rounded text-[9px] font-bold uppercase">${r.type}</span>
+                    <h4 class="text-2xl font-bold text-slate-800 mt-4 mb-6">${r.title}</h4>
+                    <div class="flex justify-between items-center">
+                        <div class="flex-1 mr-4">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Progress Tracking</p>
+                            <div class="w-full bg-slate-100 h-1 rounded-full">
+                                <div class="bg-purple-600 h-1 rounded-full" style="width: 25%"></div>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-bold text-purple-600 uppercase tracking-widest">${r.status}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // UTILS
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('translate-y-32', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-32', 'opacity-0'), 3000);
+        }
+
+        window.onload = initAuth;
+    </script>
+</body>
+</html>
