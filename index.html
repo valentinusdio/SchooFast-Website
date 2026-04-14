@@ -1,779 +1,594 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SCHOOFAST - School On-Demand Services</title>
-    <!-- Tailwind CSS -->
+    <title>TeladanEduHub - Sobat Belajar Teladan</title>
+    
+    <!-- Google Fonts: Plus Jakarta Sans for a modern, elegant, and neat look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS (CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Phosphor Icons -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <!-- Chart.js untuk Decision Support System -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Google Fonts: Poppins -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind Config for Dark Mode -->
     <script>
         tailwind.config = {
+            darkMode: 'class', // Enable class-based dark mode
             theme: {
-                extend: {
-                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
-                    colors: { primary: '#4f46e5', secondary: '#8b5cf6', dark: '#0f172a' }
-                }
+                extend: {}
             }
         }
     </script>
+
+    <!-- Lucide Icons (CDN) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Custom CSS for Animations & Font -->
     <style>
-        /* Custom scrollbar & Animations */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #8b5cf6; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        .animate-blob { animation: blob 10s infinite alternate; }
+        .animation-delay-2000 { animation-delay: 2s; }
+        .animation-delay-4000 { animation-delay: 4s; }
         
-        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* Glassmorphism for Auth */
-        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
+        .quote-transition { transition: all 0.7s ease-in-out; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans h-screen flex overflow-hidden selection:bg-primary selection:text-white relative">
+<!-- transition-colors memastikan perpindahan terang ke gelap sangat mulus -->
+<body class="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 selection:bg-indigo-200 selection:text-indigo-900 dark:selection:bg-indigo-900 dark:selection:text-indigo-200 overflow-x-hidden transition-colors duration-300">
 
-    <!-- Toast Notification Container -->
-    <div id="toast-container" class="fixed top-4 right-4 z-[60] flex flex-col gap-3"></div>
+    <!-- ========================================== -->
+    <!-- BAGIAN CONFIGURASI: UBAH LINK/KONTAK DI BAWAH INI -->
+    <!-- ========================================== -->
+    
+    <!-- Animated Background Decor -->
+    <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none flex justify-center items-center">
+        <div class="absolute top-[-10%] left-[-10%] w-72 h-72 md:w-96 md:h-96 bg-indigo-300/30 dark:bg-indigo-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[80px] md:blur-[100px] opacity-70 animate-blob"></div>
+        <div class="absolute top-[20%] right-[-10%] w-72 h-72 md:w-96 md:h-96 bg-blue-300/30 dark:bg-blue-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[80px] md:blur-[100px] opacity-70 animate-blob animation-delay-2000"></div>
+        <div class="absolute bottom-[-20%] left-[20%] w-72 h-72 md:w-96 md:h-96 bg-purple-300/30 dark:bg-purple-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[80px] md:blur-[100px] opacity-70 animate-blob animation-delay-4000"></div>
+    </div>
 
-    <!-- MODAL PANDUAN OTORISASI DOMAIN (Muncul jika kena error unauthorized-domain) -->
-    <div id="domain-setup-modal" class="hidden fixed inset-0 z-[100] bg-dark/80 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity">
-        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-8 relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-500 to-amber-500"></div>
-            <button onclick="closeDomainModal()" class="absolute top-4 right-4 text-slate-400 hover:text-dark">
-                <i class="ph ph-x text-2xl"></i>
+    <!-- Main Content Container -->
+    <div class="relative z-10 flex flex-col min-h-screen">
+        
+        <!-- Navbar -->
+        <nav class="w-full px-4 sm:px-6 py-4 flex justify-between items-center max-w-7xl mx-auto border-b border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl sticky top-0 z-50 bg-white/60 dark:bg-slate-900/80 transition-colors duration-300">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <img src="https://img.sanishtech.com/u/887de70585fdad8aeac45481e6c289b0.png" alt="TeladanEduHub Logo" class="h-12 sm:h-14 w-auto drop-shadow-md">
+                <span class="text-xl sm:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-blue-700 dark:from-indigo-400 dark:to-blue-400 tracking-tight">
+                    TeladanEduHub
+                </span>
+            </div>
+            
+            <!-- Dark/Light Mode Toggle Button -->
+            <button id="theme-toggle" type="button" class="p-2 sm:p-2.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-yellow-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-300 shadow-sm border border-transparent dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <!-- Sun icon (for dark mode) -->
+                <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4.22 4.22a1 1 0 011.415 0l.708.708a1 1 0 01-1.414 1.414l-.708-.708a1 1 0 010-1.414zM16 10a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zm-4.22 4.22a1 1 0 010 1.415l-.708.708a1 1 0 01-1.414-1.414l.708-.708a1 1 0 011.414 0zM10 16a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zm-4.22-4.22a1 1 0 01-1.415 0l-.708-.708a1 1 0 011.414-1.414l.708.708a1 1 0 010 1.414zM4 10a1 1 0 01-1-1V8a1 1 0 112 0v1a1 1 0 01-1 1zM5.78 5.78a1 1 0 010-1.415l.708-.708a1 1 0 011.414 1.414l-.708.708a1 1 0 01-1.414 0zM10 5a5 5 0 100 10 5 5 0 000-10z"></path></svg>
+                <!-- Moon icon (for light mode) -->
+                <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
             </button>
-            
-            <div class="flex items-center gap-4 mb-6">
-                <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0">
-                    <i class="ph ph-warning-circle text-2xl"></i>
-                </div>
-                <div>
-                    <h2 class="text-xl font-bold text-dark">Domain Belum Diotorisasi!</h2>
-                    <p class="text-sm text-slate-500">Google memblokir login karena domain ini tidak dikenal.</p>
-                </div>
-            </div>
-
-            <div class="space-y-4 text-sm text-slate-600">
-                <p>Agar login Google <strong>benar-benar berfungsi (bukan simulasi)</strong>, ikuti 3 langkah wajib ini:</p>
-                
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                    <p class="font-bold text-dark mb-1">1. Buka Firebase Console Anda</p>
-                    <p>Buka <a href="https://console.firebase.google.com" target="_blank" class="text-primary hover:underline">console.firebase.google.com</a>, pilih project Anda, lalu ke menu <strong>Authentication &gt; Settings &gt; Authorized domains</strong>.</p>
-                </div>
-
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                    <p class="font-bold text-dark mb-1">2. Tambahkan Domain Ini:</p>
-                    <div class="flex items-center gap-2 mt-2">
-                        <code id="current-domain-text" class="bg-dark text-emerald-400 px-3 py-2 rounded-lg font-mono flex-1 select-all">memuat...</code>
-                    </div>
-                    <p class="text-xs mt-2 text-slate-500">*Copy dan klik "Add domain" di Firebase.</p>
-                </div>
-
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                    <p class="font-bold text-dark mb-1">3. Masukkan Config Asli di Kode</p>
-                    <p>Pastikan Anda sudah mengganti variabel <code>firebaseConfig</code> di dalam kode HTML ini dengan konfigurasi asli dari project Anda.</p>
-                </div>
-            </div>
-
-            <div class="mt-8 flex gap-3">
-                <button onclick="closeDomainModal()" class="flex-1 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors">Tutup</button>
-                <button onclick="forceSimulate()" class="flex-1 py-3 bg-primary text-white font-bold rounded-xl hover:bg-indigo-600 shadow-md transition-colors">Gunakan Simulasi Saja</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 1. AUTHENTICATION SCREEN -->
-    <div id="auth-screen" class="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-900 via-primary to-secondary absolute inset-0 z-40 transition-opacity duration-500 overflow-y-auto py-10">
-        <!-- Auth Card -->
-        <div class="glass p-8 md:p-10 rounded-3xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-500 hover:shadow-primary/50 relative overflow-hidden my-auto">
-            <div class="absolute -top-16 -right-16 w-32 h-32 bg-secondary rounded-full opacity-20 blur-2xl"></div>
-            
-            <div class="text-center mb-6 relative z-10">
-                <div class="w-16 h-16 bg-gradient-to-tr from-primary to-secondary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg transform hover:rotate-3 transition-transform">
-                    <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5" /><path d="M13 14l-3 4h4l-2 4" stroke="currentColor" class="text-amber-300"/>
-                    </svg>
-                </div>
-                <h1 class="text-3xl font-bold text-dark tracking-tight">SCHOO<span class="text-primary">FAST</span></h1>
-                <p class="text-sm text-slate-500 mt-1 font-medium">DSS & On-Demand Services</p>
-            </div>
-            
-            <!-- Login Form -->
-            <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4 relative z-10 block">
-                
-                <!-- Google Sign In Button -->
-                <button type="button" onclick="signInWithGoogle()" class="w-full py-3 px-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl shadow-sm hover:bg-slate-50 hover:shadow transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3">
-                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5">
-                    Lanjutkan dengan Google
-                </button>
-
-                <div class="flex items-center my-4 opacity-50">
-                    <div class="flex-grow border-t border-slate-300"></div>
-                    <span class="mx-4 text-xs font-bold text-slate-500 uppercase tracking-wider">ATAU MANUAL</span>
-                    <div class="flex-grow border-t border-slate-300"></div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">Username</label>
-                    <div class="relative">
-                        <i class="ph ph-user absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-lg"></i>
-                        <input type="text" id="login-user" required class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all text-sm" placeholder="Masukkan username">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">Password</label>
-                    <div class="relative">
-                        <i class="ph ph-lock-key absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-lg"></i>
-                        <input type="password" id="login-pass" required class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all text-sm" placeholder="••••••••">
-                    </div>
-                </div>
-                <button type="submit" class="w-full py-3 px-4 bg-gradient-to-r from-primary to-secondary hover:from-indigo-600 hover:to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all">
-                    Masuk ke Sistem
-                </button>
-                <div class="flex justify-between text-xs text-slate-500 mt-4 px-2">
-                    <p>Siswa: <span class="font-bold text-primary">siswa</span> / <span class="font-bold">123</span></p>
-                    <p>Admin: <span class="font-bold text-primary">admin</span> / <span class="font-bold">123</span></p>
-                </div>
-                <p class="text-center text-sm text-slate-600 mt-4 border-t border-slate-200 pt-4">Belum punya akun? <a href="#" onclick="toggleAuthMode('register')" class="text-primary font-bold hover:underline">Daftar sekarang</a></p>
-            </form>
-
-            <!-- Register Form -->
-            <form id="register-form" onsubmit="handleRegister(event)" class="space-y-4 relative z-10 hidden">
-                
-                <!-- Google Sign In Button for Register -->
-                <button type="button" onclick="signInWithGoogle()" class="w-full py-3 px-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl shadow-sm hover:bg-slate-50 hover:shadow transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3">
-                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5">
-                    Daftar Cepat dengan Google
-                </button>
-
-                <div class="flex items-center my-4 opacity-50">
-                    <div class="flex-grow border-t border-slate-300"></div>
-                    <span class="mx-4 text-xs font-bold text-slate-500 uppercase tracking-wider">ATAU MANUAL</span>
-                    <div class="flex-grow border-t border-slate-300"></div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Lengkap</label>
-                    <input type="text" id="reg-name" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary outline-none text-sm transition-all" placeholder="Nama Anda">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Username</label>
-                        <input type="text" id="reg-user" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary outline-none text-sm transition-all" placeholder="username">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Password</label>
-                        <input type="password" id="reg-pass" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary outline-none text-sm transition-all" placeholder="••••">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Pilih Peran (Role)</label>
-                    <select id="reg-role" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary outline-none text-sm transition-all cursor-pointer">
-                        <option value="siswa">Siswa / Pelajar</option>
-                        <option value="admin">Admin / Guru / Petugas</option>
-                    </select>
-                </div>
-                <button type="submit" class="w-full py-3 px-4 bg-dark hover:bg-slate-800 text-white font-bold rounded-xl shadow-lg transform hover:-translate-y-0.5 transition-all mt-2">
-                    Buat Akun
-                </button>
-                <p class="text-center text-sm text-slate-600 mt-4 border-t border-slate-200 pt-4">Sudah punya akun? <a href="#" onclick="toggleAuthMode('login')" class="text-primary font-bold hover:underline">Kembali Login</a></p>
-            </form>
-        </div>
-    </div>
-
-    <!-- 2. MAIN APP CONTAINER -->
-    <div id="app-screen" class="hidden w-full h-full flex relative">
-        <div id="mobile-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-dark/50 backdrop-blur-sm z-20 hidden lg:hidden transition-opacity"></div>
-
-        <!-- Sidebar Navigation -->
-        <nav id="sidebar" class="fixed lg:static w-72 h-full bg-dark text-slate-300 flex flex-col z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl lg:shadow-none">
-            <div class="p-6 border-b border-slate-800 flex items-center justify-between lg:justify-start gap-4 bg-slate-900/50">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-                        <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5" /><path d="M13 14l-3 4h4l-2 4" stroke="currentColor" class="text-amber-300"/>
-                        </svg>
-                    </div>
-                    <h2 class="text-xl font-bold tracking-wider text-white">SCHOO<span class="text-primary">FAST</span></h2>
-                </div>
-                <button onclick="toggleSidebar()" class="lg:hidden text-slate-400 hover:text-white"><i class="ph ph-x text-2xl"></i></button>
-            </div>
-            
-            <div class="flex-1 overflow-y-auto py-6 custom-scrollbar">
-                <p class="px-6 text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Layanan Utama</p>
-                <ul class="space-y-2 px-4" id="nav-links"></ul>
-            </div>
-
-            <div class="p-5 border-t border-slate-800 bg-slate-900">
-                <div class="flex items-center gap-3 mb-4 bg-slate-800 p-3 rounded-xl border border-slate-700 relative overflow-hidden">
-                    <!-- Google Account Indicator -->
-                    <div id="google-badge" class="hidden absolute -right-2 -top-2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow"><img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4 mr-1 mt-1"></div>
-                    
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center text-white font-bold shadow-inner shrink-0">
-                        <i class="ph ph-user text-xl"></i>
-                    </div>
-                    <div class="overflow-hidden">
-                        <p class="text-sm font-bold text-white truncate" id="user-name">Nama User</p>
-                        <p class="text-xs text-primary font-medium uppercase tracking-wide truncate" id="user-role">Role</p>
-                    </div>
-                </div>
-                <button onclick="logout()" class="w-full py-2.5 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/20 text-sm font-bold rounded-xl transition-all flex items-center justify-center group">
-                    <i class="ph ph-sign-out mr-2 group-hover:-translate-x-1 transition-transform"></i> Keluar Sistem
-                </button>
-            </div>
         </nav>
 
-        <!-- Main Content Area -->
-        <main class="flex-1 flex flex-col relative h-full overflow-hidden w-full bg-slate-50/50">
-            <header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center px-4 lg:px-8 shadow-sm z-10 shrink-0">
-                <button onclick="toggleSidebar()" class="lg:hidden p-2 mr-4 bg-white rounded-lg border border-slate-200 shadow-sm text-slate-600 hover:text-primary transition-colors">
-                    <i class="ph ph-list text-2xl"></i>
-                </button>
-                <div>
-                    <h1 class="text-2xl font-bold text-dark tracking-tight" id="page-title">Dashboard</h1>
-                    <p class="text-sm text-slate-500 hidden md:block" id="page-subtitle">Ringkasan aktivitas dan status operasional</p>
+        <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 md:py-12 space-y-16 md:space-y-24">
+            
+            <!-- HERO SECTION -->
+            <section class="text-center space-y-6 md:space-y-8 mt-6 md:mt-10">
+                <!-- Tambahan Logo TeladanEduHub di Atas Judul -->
+                <div class="flex justify-center mb-12 md:mb-14">
+                    <img src="https://img.sanishtech.com/u/887de70585fdad8aeac45481e6c289b0.png" alt="Hero Logo" class="h-32 md:h-44 w-auto drop-shadow-xl animate-float">
                 </div>
-            </header>
-            <div class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8" id="main-content"></div>
+
+                <div class="inline-flex items-center gap-2 px-4 py-2 md:px-5 md:py-2.5 rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-indigo-100/50 dark:border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-xs sm:text-sm font-semibold shadow-sm transition-colors">
+                    <i data-lucide="sparkles" class="w-3 h-3 md:w-4 md:h-4 text-amber-500"></i>
+                    <span>Portal Akademik Interaktif Alumni</span>
+                </div>
+                
+                <h1 class="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight drop-shadow-sm transition-colors">
+                    Sobat Belajar <br class="hidden sm:block" />
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 dark:from-indigo-400 dark:via-blue-400 dark:to-cyan-300">
+                        Teladan
+                    </span>
+                </h1>
+                
+                <p class="max-w-2xl mx-auto text-base sm:text-lg md:text-xl text-slate-600 dark:text-slate-300 leading-relaxed font-medium transition-colors px-2">
+                    Koleksi materi, catatan, bank soal, hingga tips rahasia lolos PTN. Semua disusun rapi untuk memandu perjalanan belajarmu.
+                </p>
+
+                <!-- Dynamic Quote -->
+                <div class="mt-8 md:mt-10 max-w-4xl mx-auto bg-gradient-to-r from-indigo-50/80 to-blue-50/80 dark:from-slate-800/80 dark:to-slate-800/80 backdrop-blur-md rounded-3xl p-6 md:p-8 border border-white/60 dark:border-slate-700/60 shadow-xl shadow-indigo-100/50 dark:shadow-none min-h-[140px] md:min-h-[160px] flex items-center justify-center transition-all duration-300 hover:scale-[1.02]">
+                    <div id="quote-container" class="quote-transition opacity-100 translate-y-0 text-center w-full px-2">
+                        <p id="quote-text" class="text-lg sm:text-xl md:text-2xl font-semibold text-slate-700 dark:text-slate-200 italic mb-2 md:mb-3 transition-colors">
+                            "Pendidikan adalah tuntunan dalam hidup tumbuhnya anak-anak."
+                        </p>
+                        <p id="quote-author" class="text-indigo-600 dark:text-indigo-400 font-bold text-base md:text-lg transition-colors">
+                            — Ki Hajar Dewantara
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RESOURCE HUB GRID (9 BAGIAN PROPORSIONAL 3-3-3) -->
+            <section id="resources" class="relative">
+                <div class="flex flex-col items-center mb-8 md:mb-12 text-center px-4">
+                    <div class="h-1.5 w-12 md:w-16 bg-indigo-600 dark:bg-indigo-500 rounded-full mb-3 md:mb-4"></div>
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight transition-colors">Resource Hub</h2>
+                    <p class="text-slate-500 dark:text-slate-400 mt-2 md:mt-3 max-w-md font-medium text-sm md:text-base transition-colors">Pilih folder materi yang kamu butuhkan. Tersedia lengkap untuk setiap fase pembelajaranmu.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
+                    
+                    <!-- BARIS PERTAMA -->
+                    <!-- 1. Materi Kelas 10 -->
+                    <div class="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-3xl p-6 md:p-8 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-2xl dark:hover:shadow-indigo-900/30 hover:-translate-y-2 transition-all duration-300 flex flex-col justify-between">
+                        <div class="flex items-start justify-between mb-6 md:mb-8">
+                            <div class="p-3 md:p-4 bg-slate-50 dark:bg-slate-700 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm border border-slate-100 dark:border-slate-600">
+                                <i data-lucide="book-open" class="w-6 h-6 md:w-8 md:h-8 text-indigo-500 dark:text-indigo-400"></i>
+                            </div>
+                            <div class="h-2 w-12 md:w-16 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 opacity-30 dark:opacity-50 group-hover:opacity-100 transition-all duration-500 group-hover:w-20 md:group-hover:w-24"></div>
+                        </div>
+                        <div class="mb-6 md:mb-8">
+                            <h3 class="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-2 md:mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Materi Kelas 10</h3>
+                            <p class="text-slate-500 dark:text-slate-400 leading-relaxed text-sm transition-colors">Catatan, PPT, dan Latihan Soal Fase E</p>
+                        </div>
+                        <a href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 w-full py-3 md:py-4 px-4 md:px-6 bg-slate-50 dark:bg-slate-700 hover:bg-gradient-to-r from-indigo-500 to-blue-500 text-slate-700 dark:text-slate-200 hover:text-white dark:hover:text-white font-bold rounded-2xl transition-all duration-300 group/btn border border-slate-200 dark:border-slate-600 hover:border-transparent">
+                            Buka Folder
+                            <i data-lucide="external-link" class="w-4 h-4 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform"></i>
+                        </a>
+                    </div>
+
+                    <!-- 2. Materi Kelas 11 -->
+                    <div class="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-3xl p-6 md:p-8 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-2xl dark:hover:shadow-blue-900/30 hover:-translate-y-2 transition-all duration-300 flex flex-col justify-between">
+                        <div class="flex items-start justify-between mb-6 md:mb-8">
+                            <div class="p-3 md:p-4 bg-slate-50 dark:bg-slate-700 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm border border-slate-100 dark:border-slate-600">
+                                <i data-lucide="folder-open" class="w-6 h-6 md:w-8 md:h-8 text-blue-500 dark:text-blue-400"></i>
+                            </div>
+                            <div class="h-2 w-12 md:w-16 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 opacity-30 dark:opacity-50 group-hover:opacity-100 transition-all duration-500 group-hover:w-20 md:group-hover:w-24"></div>
+                        </div>
+                        <div class="mb-6 md:mb-8">
+                            <h3 class="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-2 md:mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Materi Kelas 11</h3>
+                            <p class="text-slate-500 dark:text-slate-400 leading-relaxed text-sm transition-colors">Pendalaman materi Fase F & Praktikum</p>
+                        </div>
+                        <a href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 w-full py-3 md:py-4 px-4 md:px-6 bg-slate-50 dark:bg-slate-700 hover:bg-gradient-to-r from-blue-500 to-cyan-500 text-slate-700 dark:text-slate-200 hover:text-white font-bold rounded-2xl transition-all duration-300 group/btn border border-slate-200 dark:border-slate-600 hover:border-transparent">
+                            Buka Folder
+                            <i data-lucide="external-link" class="w-4 h-4 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform"></i>
+                        </a>
+                    </div>
+
+                    <!-- 3. Materi Kelas 12 -->
+                    <div class="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-3xl p-6 md:p-8 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-2xl dark:hover:shadow-cyan-900/30 hover:-translate-y-2 transition-all duration-300 flex flex-col justify-between">
+                        <div class="flex items-start justify-between mb-6 md:mb-8">
+                            <div class="p-3 md:p-4 bg-slate-50 dark:bg-slate-700 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm border border-slate-100 dark:border-slate-600">
+                                <i data-lucide="graduation-cap" class="w-6 h-6 md:w-8 md:h-8 text-cyan-500 dark:text-cyan-400"></i>
+                            </div>
+                            <div class="h-2 w-12 md:w-16 rounded-full bg-gradient-to-r from-cyan-500 to-teal-500 opacity-30 dark:opacity-50 group-hover:opacity-100 transition-all duration-500 group-hover:w-20 md:group-hover:w-24"></div>
+                        </div>
+                        <div class="mb-6 md:mb-8">
+                            <h3 class="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-2 md:mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Materi Kelas 12</h3>
+                            <p class="text-slate-500 dark:text-slate-400 leading-relaxed text-sm transition-colors">Persiapan Ujian Sekolah & Materi Akhir</p>
+                        </div>
+                        <a href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 w-full py-3 md:py-4 px-4 md:px-6 bg-slate-50 dark:bg-slate-700 hover:bg-gradient-to-r from-cyan-500 to-teal-500 text-slate-700 dark:text-slate-200 hover:text-white font-bold rounded-2xl transition-all duration-300 group/btn border border-slate-200 dark:border-slate-600 hover:border-transparent">
+                            Buka Folder
+                            <i data-lucide="external-link" class="w-4 h-4 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform"></i>
+                        </a>
+                    </div>
+
+                    <!-- BARIS KEDUA -->
+                    <!-- 4. Materi TKA -->
+                    <div class="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-3xl p-6 md:p-8 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-2xl dark:hover:shadow-fuchsia-900/30 hover:-translate-y-2 transition-all duration-300 flex flex-col justify-between">
+                        <div class="flex items-start justify-between mb-6 md:mb-8">
+                            <div class="p-3 md:p-4 bg-slate-50 dark:bg-slate-700 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm border border-slate-100 dark:border-slate-600">
+                                <i data-lucide="brain" class="w-6 h-6 md:w-8 md:h-8 text-fuchsia-500 dark:text-fuchsia-400"></i>
+                            </div>
+                            <div class="h-2 w-12 md:w-16 rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-500 opacity-30 dark:opacity-50 group-hover:opacity-100 transition-all duration-500 group-hover:w-20 md:group-hover:w-24"></div>
+                        </div>
+                        <div class="mb-6 md:mb-8">
+                            <h3 class="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-2 md:mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Materi TKA</h3>
+                            <p class="text-slate-500 dark:text-slate-400 leading-relaxed text-sm transition-colors">Kupas tuntas materi Saintek & Soshum</p>
+                        </div>
+                        <a href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 w-full py-3 md:py-4 px-4 md:px-6 bg-slate-50 dark:bg-slate-700 hover:bg-gradient-to-r from-fuchsia-500 to-purple-500 text-slate-700 dark:text-slate-200 hover:text-white font-bold rounded-2xl transition-all duration-300 group/btn border border-slate-200 dark:border-slate-600 hover:border-transparent">
+                            Buka Folder
+                            <i data-lucide="external-link" class="w-4 h-4 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform"></i>
+                        </a>
+                    </div>
+
+                    <!-- 5. Ujian Praktik -->
+                    <div class="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-3xl p-6 md:p-8 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-2xl dark:hover:shadow-rose-900/30 hover:-translate-y-2 transition-all duration-300 flex flex-col justify-between">
+                        <div class="flex items-start justify-between mb-6 md:mb-8">
+                            <div class="p-3 md:p-4 bg-slate-50 dark:bg-slate-700 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm border border-slate-100 dark:border-slate-600">
+                                <i data-lucide="flask-conical" class="w-6 h-6 md:w-8 md:h-8 text-rose-500 dark:text-rose-400"></i>
+                            </div>
+                            <div class="h-2 w-12 md:w-16 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 opacity-30 dark:opacity-50 group-hover:opacity-100 transition-all duration-500 group-hover:w-20 md:group-hover:w-24"></div>
+                        </div>
+                        <div class="mb-6 md:mb-8">
+                            <h3 class="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-2 md:mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Ujian Praktik</h3>
+                            <p class="text-slate-500 dark:text-slate-400 leading-relaxed text-sm transition-colors">Panduan dan format laporan uji praktik</p>
+                        </div>
+                        <a href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 w-full py-3 md:py-4 px-4 md:px-6 bg-slate-50 dark:bg-slate-700 hover:bg-gradient-to-r from-rose-500 to-pink-500 text-slate-700 dark:text-slate-200 hover:text-white font-bold rounded-2xl transition-all duration-300 group/btn border border-slate-200 dark:border-slate-600 hover:border-transparent">
+                            Buka Folder
+                            <i data-lucide="external-link" class="w-4 h-4 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform"></i>
+                        </a>
+                    </div>
+
+                    <!-- 6. Ujian Sekolah -->
+                    <div class="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-3xl p-6 md:p-8 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-2xl dark:hover:shadow-amber-900/30 hover:-translate-y-2 transition-all duration-300 flex flex-col justify-between">
+                        <div class="flex items-start justify-between mb-6 md:mb-8">
+                            <div class="p-3 md:p-4 bg-slate-50 dark:bg-slate-700 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm border border-slate-100 dark:border-slate-600">
+                                <i data-lucide="file-text" class="w-6 h-6 md:w-8 md:h-8 text-amber-600 dark:text-amber-500"></i>
+                            </div>
+                            <div class="h-2 w-12 md:w-16 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 opacity-30 dark:opacity-50 group-hover:opacity-100 transition-all duration-500 group-hover:w-20 md:group-hover:w-24"></div>
+                        </div>
+                        <div class="mb-6 md:mb-8">
+                            <h3 class="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-2 md:mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Ujian Sekolah</h3>
+                            <p class="text-slate-500 dark:text-slate-400 leading-relaxed text-sm transition-colors">Kisi-kisi dan bank soal ujian akhir</p>
+                        </div>
+                        <a href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 w-full py-3 md:py-4 px-4 md:px-6 bg-slate-50 dark:bg-slate-700 hover:bg-gradient-to-r from-amber-500 to-orange-500 text-slate-700 dark:text-slate-200 hover:text-white font-bold rounded-2xl transition-all duration-300 group/btn border border-slate-200 dark:border-slate-600 hover:border-transparent">
+                            Buka Folder
+                            <i data-lucide="external-link" class="w-4 h-4 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform"></i>
+                        </a>
+                    </div>
+
+                    <!-- BARIS KETIGA -->
+                    <!-- 7. Persiapan SNBT -->
+                    <div class="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-3xl p-6 md:p-8 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-2xl dark:hover:shadow-teal-900/30 hover:-translate-y-2 transition-all duration-300 flex flex-col justify-between">
+                        <div class="flex items-start justify-between mb-6 md:mb-8">
+                            <div class="p-3 md:p-4 bg-slate-50 dark:bg-slate-700 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm border border-slate-100 dark:border-slate-600">
+                                <i data-lucide="database" class="w-6 h-6 md:w-8 md:h-8 text-teal-500 dark:text-teal-400"></i>
+                            </div>
+                            <div class="h-2 w-12 md:w-16 rounded-full bg-gradient-to-r from-teal-500 to-emerald-500 opacity-30 dark:opacity-50 group-hover:opacity-100 transition-all duration-500 group-hover:w-20 md:group-hover:w-24"></div>
+                        </div>
+                        <div class="mb-6 md:mb-8">
+                            <h3 class="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-2 md:mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Persiapan SNBT</h3>
+                            <p class="text-slate-500 dark:text-slate-400 leading-relaxed text-sm transition-colors">Kumpulan soal SNBT, TPS, & Literasi</p>
+                        </div>
+                        <a href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 w-full py-3 md:py-4 px-4 md:px-6 bg-slate-50 dark:bg-slate-700 hover:bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-700 dark:text-slate-200 hover:text-white font-bold rounded-2xl transition-all duration-300 group/btn border border-slate-200 dark:border-slate-600 hover:border-transparent">
+                            Buka Folder
+                            <i data-lucide="external-link" class="w-4 h-4 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform"></i>
+                        </a>
+                    </div>
+
+                    <!-- 8. Persiapan SNBP -->
+                    <div class="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-3xl p-6 md:p-8 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-2xl dark:hover:shadow-yellow-900/30 hover:-translate-y-2 transition-all duration-300 flex flex-col justify-between">
+                        <div class="flex items-start justify-between mb-6 md:mb-8">
+                            <div class="p-3 md:p-4 bg-slate-50 dark:bg-slate-700 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm border border-slate-100 dark:border-slate-600">
+                                <i data-lucide="award" class="w-6 h-6 md:w-8 md:h-8 text-yellow-600 dark:text-yellow-500"></i>
+                            </div>
+                            <div class="h-2 w-12 md:w-16 rounded-full bg-gradient-to-r from-yellow-500 to-orange-400 opacity-30 dark:opacity-50 group-hover:opacity-100 transition-all duration-500 group-hover:w-20 md:group-hover:w-24"></div>
+                        </div>
+                        <div class="mb-6 md:mb-8">
+                            <h3 class="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-2 md:mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Persiapan SNBP</h3>
+                            <p class="text-slate-500 dark:text-slate-400 leading-relaxed text-sm transition-colors">Panduan portofolio & rasionalisasi nilai</p>
+                        </div>
+                        <a href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 w-full py-3 md:py-4 px-4 md:px-6 bg-slate-50 dark:bg-slate-700 hover:bg-gradient-to-r from-yellow-500 to-orange-400 text-slate-700 dark:text-slate-200 hover:text-white font-bold rounded-2xl transition-all duration-300 group/btn border border-slate-200 dark:border-slate-600 hover:border-transparent">
+                            Buka Folder
+                            <i data-lucide="external-link" class="w-4 h-4 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform"></i>
+                        </a>
+                    </div>
+
+                    <!-- 9. Referensi Belajar -->
+                    <div class="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-3xl p-6 md:p-8 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-2xl dark:hover:shadow-violet-900/30 hover:-translate-y-2 transition-all duration-300 flex flex-col justify-between">
+                        <div class="flex items-start justify-between mb-6 md:mb-8">
+                            <div class="p-3 md:p-4 bg-slate-50 dark:bg-slate-700 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm border border-slate-100 dark:border-slate-600">
+                                <i data-lucide="compass" class="w-6 h-6 md:w-8 md:h-8 text-violet-500 dark:text-violet-400"></i>
+                            </div>
+                            <div class="h-2 w-12 md:w-16 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 opacity-30 dark:opacity-50 group-hover:opacity-100 transition-all duration-500 group-hover:w-20 md:group-hover:w-24"></div>
+                        </div>
+                        <div class="mb-6 md:mb-8">
+                            <h3 class="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-2 md:mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Referensi Belajar</h3>
+                            <p class="text-slate-500 dark:text-slate-400 leading-relaxed text-sm transition-colors">Kumpulan Drive Kakak kelas dan materi lainnya</p>
+                        </div>
+                        <a href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 w-full py-3 md:py-4 px-4 md:px-6 bg-slate-50 dark:bg-slate-700 hover:bg-gradient-to-r from-violet-500 to-fuchsia-500 text-slate-700 dark:text-slate-200 hover:text-white font-bold rounded-2xl transition-all duration-300 group/btn border border-slate-200 dark:border-slate-600 hover:border-transparent">
+                            Buka Folder
+                            <i data-lucide="external-link" class="w-4 h-4 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform"></i>
+                        </a>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- SNBP TIPS SECTION -->
+            <section class="bg-indigo-900/5 dark:bg-indigo-900/20 rounded-[2rem] md:rounded-[3rem] p-6 md:p-12 border border-indigo-100 dark:border-indigo-800/30 transition-colors duration-300">
+                <div class="flex flex-col items-center text-center mb-8 md:mb-12">
+                    <div class="h-1.5 w-12 md:w-16 bg-blue-500 rounded-full mb-3 md:mb-4"></div>
+                    <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white transition-colors">Tips & Trick SNBP</h2>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
+                    <!-- Tip 1 -->
+                    <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm p-6 md:p-8 rounded-[1.5rem] md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                        <div class="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-indigo-100 to-blue-50 dark:from-indigo-900/50 dark:to-blue-900/50 rounded-2xl flex items-center justify-center mb-5 md:mb-6 shadow-inner border border-indigo-50 dark:border-indigo-800/50 transition-colors">
+                            <i data-lucide="target" class="w-5 h-5 md:w-6 md:h-6 text-indigo-600 dark:text-indigo-400"></i>
+                        </div>
+                        <h4 class="text-lg md:text-xl font-bold text-slate-900 dark:text-white mb-2 md:mb-3 transition-colors">Pilih Jurusan Rasional</h4>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed font-medium transition-colors">Sesuaikan dengan nilai rapor dan track record alumni sekolahmu di PTN tujuan.</p>
+                    </div>
+
+                    <!-- Tip 2 -->
+                    <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm p-6 md:p-8 rounded-[1.5rem] md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                        <div class="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-indigo-100 to-blue-50 dark:from-indigo-900/50 dark:to-blue-900/50 rounded-2xl flex items-center justify-center mb-5 md:mb-6 shadow-inner border border-indigo-50 dark:border-indigo-800/50 transition-colors">
+                            <i data-lucide="trending-up" class="w-5 h-5 md:w-6 md:h-6 text-indigo-600 dark:text-indigo-400"></i>
+                        </div>
+                        <h4 class="text-lg md:text-xl font-bold text-slate-900 dark:text-white mb-2 md:mb-3 transition-colors">Grafik Nilai Stabil</h4>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed font-medium transition-colors">Pastikan grafik nilaimu dari semester 1 hingga 5 stabil atau cenderung naik.</p>
+                    </div>
+
+                    <!-- Tip 3 -->
+                    <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm p-6 md:p-8 rounded-[1.5rem] md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                        <div class="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-indigo-100 to-blue-50 dark:from-indigo-900/50 dark:to-blue-900/50 rounded-2xl flex items-center justify-center mb-5 md:mb-6 shadow-inner border border-indigo-50 dark:border-indigo-800/50 transition-colors">
+                            <i data-lucide="lightbulb" class="w-5 h-5 md:w-6 md:h-6 text-indigo-600 dark:text-indigo-400"></i>
+                        </div>
+                        <h4 class="text-lg md:text-xl font-bold text-slate-900 dark:text-white mb-2 md:mb-3 transition-colors">Sertifikat Pendukung</h4>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed font-medium transition-colors">Lampirkan sertifikat lomba minimal tingkat kabupaten/kota untuk nilai plus.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- REQUEST BOX (CTA) WITH MULTIPLE CONTACTS -->
+            <section class="bg-gradient-to-br from-indigo-600 via-blue-600 to-cyan-600 rounded-[2rem] md:rounded-[3rem] p-6 sm:p-8 md:p-14 text-white shadow-2xl shadow-blue-500/20 relative overflow-hidden">
+                <!-- Abstract Background Shapes inside CTA -->
+                <div class="absolute top-0 right-0 -mt-10 -mr-10 md:-mt-20 md:-mr-20 opacity-10 animate-blob">
+                    <div class="w-64 h-64 md:w-96 md:h-96 bg-white rounded-full blur-3xl"></div>
+                </div>
+                <div class="absolute bottom-0 left-0 -mb-10 -ml-10 md:-mb-20 md:-ml-20 opacity-10 animate-blob animation-delay-4000">
+                    <div class="w-48 h-48 md:w-72 md:h-72 bg-white rounded-full blur-3xl"></div>
+                </div>
+                
+                <div class="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
+                    <div class="text-center lg:text-left">
+                        <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 md:mb-6 tracking-tight leading-tight">Butuh Bantuan Materi Spesifik?</h2>
+                        <p class="text-indigo-100 text-base sm:text-lg md:text-xl mb-6 md:mb-8 leading-relaxed font-medium">
+                            Ada bab yang masih bikin bingung? Atau butuh referensi tugas tertentu? Jangan ragu buat sapa dan hubungi kakak kelas. Kita siap bantu kamu!
+                        </p>
+                    </div>
+
+                    <!-- Contact Grid Options -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                        
+                        <!-- EDIT WHATSAPP 1 DI SINI (href="") -->
+                        <a href="https://wa.me/6281234567890?text=Halo%20Kak..." target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 bg-white/10 hover:bg-white text-white hover:text-indigo-600 p-3 md:p-4 rounded-2xl backdrop-blur-md border border-white/20 transition-all duration-300 hover:scale-105 group">
+                            <div class="p-2 md:p-3 bg-white/20 group-hover:bg-green-500 rounded-xl transition-colors">
+                                <!-- Eksklusif WhatsApp SVG Logo -->
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 md:w-6 md:h-6 text-white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                            </div>
+                            <div class="text-left">
+                                <p class="text-[10px] md:text-xs text-indigo-100 group-hover:text-slate-500 font-medium">Hubungi via WA</p>
+                                <p class="font-bold text-sm md:text-base">WhatsApp Admin 1</p>
+                            </div>
+                        </a>
+
+                        <!-- EDIT WHATSAPP 2 DI SINI (href="") -->
+                        <a href="https://wa.me/6289876543210?text=Halo%20Kak..." target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 bg-white/10 hover:bg-white text-white hover:text-indigo-600 p-3 md:p-4 rounded-2xl backdrop-blur-md border border-white/20 transition-all duration-300 hover:scale-105 group">
+                            <div class="p-2 md:p-3 bg-white/20 group-hover:bg-green-500 rounded-xl transition-colors">
+                                <!-- Eksklusif WhatsApp SVG Logo -->
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 md:w-6 md:h-6 text-white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                            </div>
+                            <div class="text-left">
+                                <p class="text-[10px] md:text-xs text-indigo-100 group-hover:text-slate-500 font-medium">Hubungi via WA</p>
+                                <p class="font-bold text-sm md:text-base">WhatsApp Admin 2</p>
+                            </div>
+                        </a>
+
+                        <!-- EDIT INSTAGRAM 1 DI SINI (href="") -->
+                        <a href="https://instagram.com/placeholder1" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 bg-white/10 hover:bg-white text-white hover:text-pink-600 p-3 md:p-4 rounded-2xl backdrop-blur-md border border-white/20 transition-all duration-300 hover:scale-105 group">
+                            <div class="p-2 md:p-3 bg-white/20 group-hover:bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-500 rounded-xl transition-all">
+                                <i data-lucide="instagram" class="w-5 h-5 md:w-6 md:h-6 text-white"></i>
+                            </div>
+                            <div class="text-left">
+                                <p class="text-[10px] md:text-xs text-indigo-100 group-hover:text-slate-500 font-medium">DM Instagram</p>
+                                <p class="font-bold text-sm md:text-base">@instagram_1</p>
+                            </div>
+                        </a>
+
+                        <!-- EDIT INSTAGRAM 2 DI SINI (href="") -->
+                        <a href="https://instagram.com/placeholder2" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 bg-white/10 hover:bg-white text-white hover:text-pink-600 p-3 md:p-4 rounded-2xl backdrop-blur-md border border-white/20 transition-all duration-300 hover:scale-105 group">
+                            <div class="p-2 md:p-3 bg-white/20 group-hover:bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-500 rounded-xl transition-all">
+                                <i data-lucide="instagram" class="w-5 h-5 md:w-6 md:h-6 text-white"></i>
+                            </div>
+                            <div class="text-left">
+                                <p class="text-[10px] md:text-xs text-indigo-100 group-hover:text-slate-500 font-medium">DM Instagram</p>
+                                <p class="font-bold text-sm md:text-base">@instagram_2</p>
+                            </div>
+                        </a>
+
+                    </div>
+                </div>
+            </section>
+
         </main>
+
+        <!-- FOOTER & 2 PROFIL PENGEMBANG -->
+        <footer class="mt-16 md:mt-24 border-t border-slate-200/60 dark:border-slate-700/60 bg-white/60 dark:bg-slate-900/80 backdrop-blur-xl transition-colors duration-300">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12 md:py-16">
+                
+                <div class="flex flex-col items-center mb-8 md:mb-12 text-center">
+                    <h2 class="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight transition-colors">Dikembangkan Oleh</h2>
+                    <div class="h-1 w-10 md:w-12 bg-indigo-600 dark:bg-indigo-500 rounded-full mt-2 md:mt-3"></div>
+                </div>
+
+                <!-- Grid Profil -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 max-w-4xl mx-auto">
+                    
+                    <!-- PROFIL PENGEMBANG 1 -->
+                    <div class="flex flex-col items-center text-center bg-white/40 dark:bg-slate-800/40 p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-xl transition-all duration-300">
+                        <div class="relative mb-5 md:mb-6 group">
+                            <div class="w-24 h-24 md:w-28 md:h-28 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden border-4 border-white dark:border-slate-800 shadow-lg flex items-center justify-center transition-transform duration-500 group-hover:scale-110">
+                                <img 
+                                    src="https://ui-avatars.com/api/?name=Alex+Pratama&background=4f46e5&color=fff&size=150" 
+                                    alt="Profile 1" 
+                                    class="w-full h-full object-cover"
+                                />
+                            </div>
+                            <div class="absolute bottom-1 right-1 md:bottom-2 md:right-2 bg-green-500 w-4 h-4 md:w-5 md:h-5 rounded-full border-[3px] border-white dark:border-slate-800 shadow-sm animate-pulse"></div>
+                        </div>
+
+                        <!-- EDIT NAMA DAN KAMPUS PENGEMBANG 1 -->
+                        <h3 class="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white mb-1 transition-colors">Alex Pratama</h3>
+                        <p class="text-indigo-600 dark:text-indigo-400 font-bold text-xs md:text-sm mb-1 transition-colors">Computer Science Undergraduate</p>
+                        <p class="text-slate-500 dark:text-slate-400 text-xs md:text-sm mb-5 md:mb-6 font-medium transition-colors">Universitas Indonesia</p>
+
+                        <!-- EDIT SOCIAL MEDIA & KONTAK PENGEMBANG 1 -->
+                        <div class="flex gap-2 md:gap-3">
+                            <a href="mailto:emailpengembang1@gmail.com" target="_blank" rel="noopener noreferrer" class="p-2 md:p-3 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all hover:scale-110" title="Hubungi via Gmail">
+                                <i data-lucide="mail" class="w-4 h-4 md:w-5 md:h-5"></i>
+                            </a>
+                            <a href="https://linkedin.com/in/username1" target="_blank" rel="noopener noreferrer" class="p-2 md:p-3 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-all hover:scale-110" title="Kunjungi LinkedIn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 md:w-5 md:h-5"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                            </a>
+                            <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="p-2 md:p-3 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-all hover:scale-110" title="Kunjungi GitHub">
+                                <i data-lucide="github" class="w-4 h-4 md:w-5 md:h-5"></i>
+                            </a>
+                            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="p-2 md:p-3 text-slate-400 hover:text-pink-600 hover:bg-pink-50 dark:hover:bg-pink-900/20 rounded-full transition-all hover:scale-110" title="Kunjungi Instagram">
+                                <i data-lucide="instagram" class="w-4 h-4 md:w-5 md:h-5"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- PROFIL PENGEMBANG 2 -->
+                    <div class="flex flex-col items-center text-center bg-white/40 dark:bg-slate-800/40 p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-xl transition-all duration-300">
+                        <div class="relative mb-5 md:mb-6 group">
+                            <div class="w-24 h-24 md:w-28 md:h-28 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden border-4 border-white dark:border-slate-800 shadow-lg flex items-center justify-center transition-transform duration-500 group-hover:scale-110">
+                                <img 
+                                    src="https://ui-avatars.com/api/?name=Budi+Santoso&background=0284c7&color=fff&size=150" 
+                                    alt="Profile 2" 
+                                    class="w-full h-full object-cover"
+                                />
+                            </div>
+                            <div class="absolute bottom-1 right-1 md:bottom-2 md:right-2 bg-green-500 w-4 h-4 md:w-5 md:h-5 rounded-full border-[3px] border-white dark:border-slate-800 shadow-sm animate-pulse"></div>
+                        </div>
+
+                        <!-- EDIT NAMA DAN KAMPUS PENGEMBANG 2 -->
+                        <h3 class="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white mb-1 transition-colors">Budi Santoso</h3>
+                        <p class="text-indigo-600 dark:text-indigo-400 font-bold text-xs md:text-sm mb-1 transition-colors">Information Systems Undergraduate</p>
+                        <p class="text-slate-500 dark:text-slate-400 text-xs md:text-sm mb-5 md:mb-6 font-medium transition-colors">Universitas Gadjah Mada</p>
+
+                        <!-- EDIT SOCIAL MEDIA & KONTAK PENGEMBANG 2 -->
+                        <div class="flex gap-2 md:gap-3">
+                            <a href="mailto:emailpengembang2@gmail.com" target="_blank" rel="noopener noreferrer" class="p-2 md:p-3 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all hover:scale-110" title="Hubungi via Gmail">
+                                <i data-lucide="mail" class="w-4 h-4 md:w-5 md:h-5"></i>
+                            </a>
+                            <a href="https://linkedin.com/in/username2" target="_blank" rel="noopener noreferrer" class="p-2 md:p-3 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-all hover:scale-110" title="Kunjungi LinkedIn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 md:w-5 md:h-5"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                            </a>
+                            <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="p-2 md:p-3 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-all hover:scale-110" title="Kunjungi GitHub">
+                                <i data-lucide="github" class="w-4 h-4 md:w-5 md:h-5"></i>
+                            </a>
+                            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="p-2 md:p-3 text-slate-400 hover:text-pink-600 hover:bg-pink-50 dark:hover:bg-pink-900/20 rounded-full transition-all hover:scale-110" title="Kunjungi Instagram">
+                                <i data-lucide="instagram" class="w-4 h-4 md:w-5 md:h-5"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="mt-12 md:mt-16 pt-6 md:pt-8 border-t border-slate-200/60 dark:border-slate-700/60 w-full text-center text-xs md:text-sm text-slate-400 dark:text-slate-500 font-semibold transition-colors">
+                    <p>© <span id="current-year"></span> TeladanEduHub. Built with passion & HTML.</p>
+                </div>
+            </div>
+        </footer>
+
     </div>
 
-    <!-- ========================================== -->
-    <!-- FIREBASE & GOOGLE AUTHENTICATION MODULE    -->
-    <!-- ========================================== -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-
-        // =========================================================================
-        // PENTING: GANTI KONFIGURASI DI BAWAH INI DENGAN MILIK ANDA SENDIRI
-        // =========================================================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyBGNhNUABDikSf0HfFPdef6aQW0_PMon9I",
-            authDomain: "schoofast-7bafd.firebaseapp.com",
-            projectId: "schoofast-7bafd",
-            storageBucket: "schoofast-7bafd.firebasestorage.app",
-            messagingSenderId: "830763446336",
-            appId: "1:830763446336:web:dc10d814a6ca38a2d62fa5"
-        };
-        // =========================================================================
-
-        let auth, provider;
-
-        try {
-            const app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            provider = new GoogleAuthProvider();
-            
-            // Mengekspos fungsi ke window agar bisa dipanggil oleh tombol HTML (onclick)
-            window.signInWithGoogle = async () => {
-                
-                // Mencegah error jika config masih dummy asli bawaan
-                if (firebaseConfig.apiKey === "GANTI_DENGAN_API_KEY_ANDA") {
-                    window.showToast("Harap masukkan Konfigurasi Firebase Anda terlebih dahulu di dalam kode!", "error");
-                    return;
-                }
-
-                try {
-                    // Coba Login Google Asli
-                    const result = await signInWithPopup(auth, provider);
-                    const user = result.user;
-                    window.handleGoogleLogin(user); // Panggil fungsi internal untuk proses data
-                } catch (error) {
-                    console.error("Google Auth Error Detail:", error);
-                    
-                    // JIKA ERROR ADALAH UNAUTHORIZED DOMAIN, MUNCULKAN MODAL PANDUAN!
-                    if (error.code === 'auth/unauthorized-domain') {
-                        const currentDomain = window.location.hostname;
-                        document.getElementById('current-domain-text').innerText = currentDomain;
-                        document.getElementById('domain-setup-modal').classList.remove('hidden');
-                    } else {
-                        window.showToast("Login Google gagal: " + (error.message || "Kesalahan tak terduga."), "error");
-                    }
-                }
-            };
-        } catch(e) {
-            console.warn("Firebase Init Skipped:", e);
-            window.signInWithGoogle = () => {
-                window.showToast("Konfigurasi Firebase belum diatur dengan benar di kode.", "error");
-            }
-        }
-    </script>
-
-    <!-- ========================================== -->
-    <!-- LOGIKA SISTEM & ANALYTICS (JAVASCRIPT)     -->
-    <!-- ========================================== -->
+    <!-- JAVASCRIPT LOGIC -->
     <script>
-        // Modal Handlers
-        function closeDomainModal() {
-            document.getElementById('domain-setup-modal').classList.add('hidden');
-        }
+        // 1. Initialize Lucide Icons
+        lucide.createIcons();
 
-        // Fallback Simulasi jika user memaksa saat domain belum siap
-        function forceSimulate() {
-            closeDomainModal();
-            window.showToast("Masuk ke mode simulasi sementara...", "info");
-            setTimeout(() => {
-                const mockUser = {
-                    uid: "mock-uid-" + Math.floor(Math.random() * 10000),
-                    displayName: "Siswa (Mode Simulasi Google)",
-                    email: "siswa.demo@student.sch.id"
-                };
-                window.handleGoogleLogin(mockUser);
-            }, 1000);
-        }
+        // 2. Set Current Year in Footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
 
-        /**
-         * 1. INISIALISASI & KONFIGURASI DATABASE
-         */
-        const DB_KEY = 'schoofast_db_v2';
-        let currentUser = null;
-        let currentView = 'dashboard';
-        let chartInstance = null;
-
-        const now = Date.now();
-        const yest = now - 86400000;
-        const lastWeek = now - (86400000 * 5);
-
-        const initialDB = {
-            users: [
-                { id: 'U-001', name: 'Budi (Siswa Demo)', username: 'siswa', password: '123', role: 'siswa' },
-                { id: 'U-002', name: 'Pak Guru (Admin Demo)', username: 'admin', password: '123', role: 'admin' }
-            ],
-            med: [
-                { id: 'MED-1', userId: 'U-001', name: 'Budi (Siswa Demo)', location: 'Lapangan', severity: 1, status: 'Selesai', timestamp: lastWeek },
-                { id: 'MED-2', userId: 'U-003', name: 'Anton', location: 'Kantin', severity: 2, status: 'Selesai', timestamp: yest },
-            ], 
-            lib_books: [
-                { id: 'B01', title: 'Pemrograman Web dengan Node.js', author: 'Riza Fahmi', category: 'Teknologi', stock: 1, total: 2 },
-                { id: 'B02', title: 'Fisika Kuantum Dasar', author: 'Prof. Yohanes', category: 'Sains', stock: 0, total: 1 },
-                { id: 'B03', title: 'Sejarah Indonesia Modern', author: 'M.C. Ricklefs', category: 'Sejarah', stock: 5, total: 5 },
-                { id: 'B04', title: 'Matematika Diskrit', author: 'Rinaldi Munir', category: 'Matematika', stock: 2, total: 3 },
-                { id: 'B05', title: 'Laskar Pelangi', author: 'Andrea Hirata', category: 'Sastra', stock: 3, total: 4 }
-            ],
-            lib_loans: [
-                { id: 'LIB-1', bookId: 'B01', userId: 'U-001', status: 'Dikembalikan', date: lastWeek },
-                { id: 'LIB-2', bookId: 'B01', userId: 'U-003', status: 'Dipinjam', date: yest },
-                { id: 'LIB-3', bookId: 'B02', userId: 'U-004', status: 'Dipinjam', date: yest },
-                { id: 'LIB-4', bookId: 'B04', userId: 'U-001', status: 'Dikembalikan', date: lastWeek },
-                { id: 'LIB-5', bookId: 'B05', userId: 'U-005', status: 'Dipinjam', date: now }
-            ], 
-            fix: [
-                { id: 'FIX-1', userId: 'U-001', item: 'AC Kelas 10A Bocor', location: 'Kelas 10A', urgency: 'Tinggi', status: 'Selesai' },
-                { id: 'FIX-2', userId: 'U-003', item: 'Kran Toilet Pria Patah', location: 'Toilet Lt 1', urgency: 'Tinggi', status: 'Menunggu Review' },
-                { id: 'FIX-3', userId: 'U-004', item: 'Proyektor Buram', location: 'Lab Komputer', urgency: 'Rendah', status: 'Sedang Diperbaiki' },
-                { id: 'FIX-4', userId: 'U-005', item: 'Kabel Listrik Terbuka', location: 'Koridor', urgency: 'Kritis', status: 'Masuk Antrian Perbaikan' }
-            ], 
-            gear_items: [
-                { id: 'G01', name: 'Proyektor LCD Epson', type: 'alat' },
-                { id: 'G02', name: 'Ruang Aula Utama', type: 'ruang' },
-                { id: 'G03', name: 'Kamera DSLR Canon', type: 'alat' },
-                { id: 'G04', name: 'Laboratorium Komputer', type: 'ruang' }
-            ],
-            gear_reqs: [
-                { id: 'GER-1', itemId: 'G02', start: lastWeek, end: lastWeek + 7200000, status: 'Disetujui' },
-                { id: 'GER-2', itemId: 'G04', start: yest, end: yest + 14400000, status: 'Disetujui' },
-                { id: 'GER-3', itemId: 'G02', start: now + 86400000, end: now + 90000000, status: 'Disetujui' }
-            ], 
-            adm: [] 
-        };
-
-        function getDB() { const db = localStorage.getItem(DB_KEY); return db ? JSON.parse(db) : initialDB; }
-        function saveDB(db) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
-
-        /**
-         * 2. UI HELPERS
-         */
-        window.showToast = function(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            let colors, icon;
-            if (type === 'success') { colors = 'bg-emerald-50 text-emerald-600 border border-emerald-200'; icon = 'ph-check-circle text-emerald-500'; }
-            else if (type === 'error') { colors = 'bg-red-50 text-red-600 border border-red-200'; icon = 'ph-warning-circle text-red-500'; }
-            else { colors = 'bg-indigo-50 text-indigo-600 border border-indigo-200'; icon = 'ph-info text-indigo-500'; }
-            toast.className = `${colors} px-5 py-4 rounded-2xl shadow-xl flex items-center gap-4 fade-in transform transition-all duration-300 w-max max-w-sm`;
-            toast.innerHTML = `<i class="ph ${icon} text-2xl drop-shadow-sm"></i><p class="text-sm font-semibold tracking-wide">${message}</p>`;
-            container.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-10px) scale(0.95)'; setTimeout(() => toast.remove(), 300); }, 3000);
-        }
-
-        function generateId(prefix) { return prefix + '-' + Math.random().toString(36).substr(2, 5).toUpperCase(); }
-        function formatDate(timestamp) { return new Date(timestamp).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }); }
-
-        function getStatusBadge(status) {
-            const map = {
-                'Menunggu': 'bg-amber-100 text-amber-700', 'Diproses': 'bg-blue-100 text-blue-700', 'Selesai': 'bg-emerald-100 text-emerald-700',
-                'Ditolak': 'bg-red-100 text-red-700', 'Diajukan': 'bg-amber-100 text-amber-700', 'Dipinjam': 'bg-indigo-100 text-indigo-700',
-                'Dikembalikan': 'bg-emerald-100 text-emerald-700', 'Menunggu Review': 'bg-amber-100 text-amber-700',
-                'Sedang Diperbaiki': 'bg-blue-100 text-blue-700', 'Disetujui': 'bg-emerald-100 text-emerald-700', 'Masuk Antrian Perbaikan': 'bg-purple-100 text-purple-700'
-            };
-            const classes = map[status] || 'bg-slate-100 text-slate-700';
-            return `<span class="px-3 py-1 rounded-lg text-xs font-bold border border-black/5 ${classes} shadow-sm inline-flex items-center gap-1">${status}</span>`;
-        }
-
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); document.getElementById('mobile-overlay').classList.toggle('hidden'); }
-
-        /**
-         * 3. AUTHENTICATION (MANUAL & GOOGLE)
-         */
-        function toggleAuthMode(mode) {
-            document.getElementById('login-form').classList.toggle('hidden', mode !== 'login');
-            document.getElementById('register-form').classList.toggle('hidden', mode !== 'register');
-        }
-
-        function handleRegister(e) {
-            e.preventDefault(); const db = getDB();
-            const name = document.getElementById('reg-name').value;
-            const user = document.getElementById('reg-user').value;
-            const pass = document.getElementById('reg-pass').value;
-            const role = document.getElementById('reg-role').value;
-            if(db.users.find(u => u.username === user)) { showToast('Username sudah dipakai.', 'error'); return; }
-            db.users.push({ id: generateId('U'), name, username: user, password: pass, role, authType: 'manual' });
-            saveDB(db); showToast('Akun berhasil dibuat! Silakan login.', 'success');
-            toggleAuthMode('login'); document.getElementById('register-form').reset();
-        }
-
-        function handleLogin(e) {
-            e.preventDefault(); const db = getDB();
-            const user = document.getElementById('login-user').value; const pass = document.getElementById('login-pass').value;
-            const foundUser = db.users.find(u => u.username === user && u.password === pass);
-            if (foundUser) {
-                currentUser = { id: foundUser.id, name: foundUser.name, role: foundUser.role, authType: 'manual' };
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                showToast(`Selamat datang, ${currentUser.name}!`, 'success'); checkAuth();
-            } else { showToast('Username atau password salah!', 'error'); }
-        }
-
-        // --- HANDLER GOOGLE LOGIN ---
-        window.handleGoogleLogin = function(googleUser) {
-            const db = getDB();
-            // Cek apakah user (email) sudah terdaftar di sistem kita
-            let foundUser = db.users.find(u => u.username === googleUser.email);
-            
-            if (!foundUser) {
-                // Auto register jika belum ada (Role Default: Siswa)
-                foundUser = {
-                    id: googleUser.uid || generateId('U'),
-                    name: googleUser.displayName || 'Pengguna Google',
-                    username: googleUser.email,
-                    password: 'sso-google-auth', // Tanda bahwa ini login SSO
-                    role: 'siswa',
-                    authType: 'google'
-                };
-                db.users.push(foundUser);
-                saveDB(db);
-                showToast('Akun Google berhasil didaftarkan!', 'success');
-            }
-            
-            // Set currentUser untuk sesi lokal
-            currentUser = { id: foundUser.id, name: foundUser.name, role: foundUser.role, username: foundUser.username, authType: 'google' };
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            showToast(`Login berhasil! Hai, ${currentUser.name}!`, 'success');
-            checkAuth();
-        }
-
-        function checkAuth() {
-            const stored = localStorage.getItem('currentUser');
-            if (stored) {
-                currentUser = JSON.parse(stored);
-                document.getElementById('auth-screen').classList.add('opacity-0', 'pointer-events-none');
-                setTimeout(() => document.getElementById('auth-screen').classList.add('hidden'), 500);
-                document.getElementById('app-screen').classList.remove('hidden');
-                document.getElementById('user-name').innerText = currentUser.name;
-                
-                // Tampilkan label jika user login pakai Google
-                let displayRole = currentUser.role === 'admin' ? 'Administrator' : 'Siswa / Pelajar';
-                if(currentUser.authType === 'google') {
-                    displayRole += ` • ${currentUser.username}`;
-                    document.getElementById('google-badge').classList.remove('hidden');
-                } else {
-                    document.getElementById('google-badge').classList.add('hidden');
-                }
-                
-                document.getElementById('user-role').innerText = displayRole;
-                renderSidebar(); navigate('dashboard');
-            } else {
-                document.getElementById('auth-screen').classList.remove('hidden', 'opacity-0', 'pointer-events-none');
-                document.getElementById('app-screen').classList.add('hidden');
-            }
-        }
-
-        function logout() { localStorage.removeItem('currentUser'); currentUser = null; document.getElementById('login-form').reset(); checkAuth(); }
-
-        /**
-         * 4. ROUTER & MENUS
-         */
-        const menuItems = [
-            { id: 'dashboard', label: 'Dashboard Utama', icon: 'ph-squares-four', sub: currentUser?.role==='admin' ? 'Transaction & Analytics DSS' : 'Ringkasan & Aktivitas' },
-            { id: 'med', label: 'SCHOO-MED', icon: 'ph-first-aid-kit', sub: 'Layanan Darurat & Kesehatan' },
-            { id: 'lib', label: 'SCHOO-LIB', icon: 'ph-books', sub: 'Perpustakaan & Peminjaman' },
-            { id: 'fix', label: 'SCHOO-FIX', icon: 'ph-wrench', sub: 'Pelaporan Kerusakan Sarpras' },
-            { id: 'gear', label: 'SCHOO-GEAR', icon: 'ph-projector-screen', sub: 'Peminjaman Ruang & Alat' },
-            { id: 'adm', label: 'SCHOO-ADM', icon: 'ph-envelope-simple', sub: 'Persuratan & Administrasi' }
+        // 3. Dynamic Motivational Quote Logic with 20 Authors
+        const quotes = [
+            { text: "Pendidikan adalah tuntunan dalam hidup tumbuhnya anak-anak.", author: "Ki Hajar Dewantara" },
+            { text: "Pendidikan adalah senjata paling ampuh untuk mengubah dunia.", author: "Nelson Mandela" },
+            { text: "Pendidikan bukan tentang menghafal fakta, tapi melatih cara berpikir.", author: "Albert Einstein" },
+            { text: "Tidak masalah berjalan lambat, selama kamu tidak berhenti.", author: "Confucius" },
+            { text: "Tanpa cinta pada ilmu, kemajuan hanya akan jadi mimpi.", author: "B. J. Habibie" },
+            { text: "Akar pendidikan itu pahit, tapi buahnya manis.", author: "Aristotle" },
+            { text: "Investasi terbaik adalah investasi pada ilmu.", author: "Benjamin Franklin" },
+            { text: "Pendidikan bukan persiapan hidup, pendidikan adalah kehidupan itu sendiri.", author: "John Dewey" },
+            { text: "Pendidikan adalah menyalakan api, bukan mengisi wadah.", author: "Socrates" },
+            { text: "Pendidikan bisa membebaskan, tapi juga bisa membelenggu—tergantung bagaimana digunakan.", author: "Paulo Freire" },
+            { text: "Tujuan pendidikan adalah mempertajam kecerdasan dan memperkuat karakter.", author: "Tan Malaka" },
+            { text: "Tidak ada yang perlu ditakuti dalam belajar, yang ada hanya perlu dipahami.", author: "Marie Curie" },
+            { text: "Arah pendidikan seseorang akan menentukan masa depannya.", author: "Plato" },
+            { text: "Kecerdasan adalah kemampuan untuk beradaptasi.", author: "Stephen Hawking" },
+            { text: "Pendidikan adalah tiket menuju masa depan.", author: "Malcolm X" },
+            { text: "Ing ngarsa sung tuladha, ing madya mangun karsa, tut wuri handayani.", author: "Ki Hajar Dewantara" },
+            { text: "Belajar tidak pernah melelahkan pikiran.", author: "Leonardo da Vinci" },
+            { text: "Pendidikan adalah proses mengembangkan potensi manusia sepenuhnya.", author: "Immanuel Kant" },
+            { text: "Pendidikan adalah kunci untuk membuka pintu kebebasan.", author: "George Washington Carver" },
+            { text: "Orang yang benar-benar terdidik adalah yang tahu bagaimana cara belajar.", author: "Carl Rogers" }
         ];
+        
+        let currentQuoteIndex = 0;
+        const quoteContainer = document.getElementById('quote-container');
+        const quoteText = document.getElementById('quote-text');
+        const quoteAuthor = document.getElementById('quote-author');
 
-        function renderSidebar() {
-            const nav = document.getElementById('nav-links');
-            nav.innerHTML = menuItems.map(item => `
-                <li><a href="#" onclick="navigate('${item.id}')" id="nav-${item.id}" class="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-800 group"><i class="ph ${item.icon} text-2xl group-hover:text-primary transition-colors"></i>${item.label}</a></li>
-            `).join('');
-            if(currentUser.role === 'admin') {
-                nav.innerHTML += `<li class="mt-8"><a href="#" onclick="resetSystem()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all duration-200 text-red-400 hover:text-white hover:bg-red-500/20 group border border-transparent hover:border-red-500/30"><i class="ph ph-warning-circle text-2xl group-hover:rotate-12 transition-transform"></i> Reset Data</a></li>`;
-            }
-        }
-
-        function navigate(viewId) {
-            currentView = viewId;
-            document.querySelectorAll('#nav-links a').forEach(el => {
-                el.classList.remove('bg-primary/10', 'text-primary', 'border', 'border-primary/20');
-                el.classList.add('text-slate-400', 'border-transparent');
-                el.querySelector('i').classList.remove('text-primary');
-            });
-            const activeNav = document.getElementById(`nav-${viewId}`);
-            if(activeNav) {
-                activeNav.classList.add('bg-primary/10', 'text-primary', 'border', 'border-primary/20');
-                activeNav.classList.remove('text-slate-400', 'border-transparent');
-                activeNav.querySelector('i').classList.add('text-primary');
-            }
-
-            const titleObj = menuItems.find(m => m.id === viewId);
-            document.getElementById('page-title').innerText = titleObj ? titleObj.label : 'Dashboard';
-            let subtitle = titleObj ? titleObj.sub : '';
-            if(viewId === 'dashboard' && currentUser.role === 'admin') subtitle = 'Transaction Summary & Decision Support Analytics';
-            document.getElementById('page-subtitle').innerText = subtitle;
-
-            const content = document.getElementById('main-content');
-            content.className = "flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 fade-in"; 
+        setInterval(() => {
+            // Fade out
+            quoteContainer.classList.remove('opacity-100', 'translate-y-0');
+            quoteContainer.classList.add('opacity-0', 'translate-y-4');
             
-            if(window.innerWidth < 1024 && !document.getElementById('sidebar').classList.contains('-translate-x-full')) toggleSidebar();
-            
-            if(viewId === 'dashboard') renderDashboard(content);
-            else if(viewId === 'med') renderMed(content);
-            else if(viewId === 'lib') renderLib(content);
-            else if(viewId === 'fix') renderFix(content);
-            else if(viewId === 'gear') renderGear(content);
-            else if(viewId === 'adm') renderAdm(content);
-        }
-
-        function resetSystem() {
-            if(confirm("PERINGATAN! Seluruh data simulasi akan dihapus. Lanjutkan?")) {
-                saveDB(initialDB); showToast("Sistem berhasil di-reset!", "success"); logout();
-            }
-        }
-
-        /**
-         * 5. DASHBOARD & DSS ANALYTICS LAYER (READ-ONLY)
-         */
-        function renderDashboard(container) {
-            const db = getDB();
-            const statCard = (icon, color, title, val) => `
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5 transform transition-all duration-300 hover:-translate-y-1 hover:shadow-md group">
-                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-inner transition-transform group-hover:scale-110 ${color}"><i class="ph ${icon}"></i></div>
-                    <div><p class="text-xs font-bold text-slate-500 uppercase tracking-wider">${title}</p><p class="text-3xl font-black text-dark mt-1">${val}</p></div>
-                </div>`;
-            
-            let html = `
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-8">
-                    ${statCard('ph-first-aid-kit', 'bg-red-50 text-red-500', 'Antrian PMR', db.med.filter(m=>m.status!=='Selesai').length)}
-                    ${statCard('ph-books', 'bg-indigo-50 text-indigo-500', 'Buku Dipinjam', db.lib_loans.filter(l=>l.status==='Dipinjam').length)}
-                    ${statCard('ph-wrench', 'bg-amber-50 text-amber-500', 'Laporan Rusak', db.fix.filter(f=>f.status!=='Selesai').length)}
-                    ${statCard('ph-envelope-simple', 'bg-emerald-50 text-emerald-500', 'Surat Aktif', db.adm.filter(a=>a.step < 4).length)}
-                </div>`;
-
-            if(currentUser.role === 'admin') {
-                const todayStart = new Date(); todayStart.setHours(0,0,0,0);
-                const medToday = db.med.filter(m => m.timestamp >= todayStart.getTime()).length;
-                let medAvg = 0, trendIcon = '', trendColor = '', trendText = '';
-                if(db.med.length > 0) {
-                    const minTime = Math.min(...db.med.map(m=>m.timestamp));
-                    const daysElapsed = Math.max(1, Math.ceil((Date.now() - minTime) / (1000 * 60 * 60 * 24)));
-                    medAvg = (db.med.length / daysElapsed).toFixed(1);
-                    if(medToday > medAvg) { trendIcon = 'ph-trend-up'; trendColor = 'text-red-500 bg-red-100'; trendText = 'Naik di atas rata-rata'; }
-                    else if(medToday < medAvg) { trendIcon = 'ph-trend-down'; trendColor = 'text-emerald-500 bg-emerald-100'; trendText = 'Turun di bawah rata-rata'; }
-                    else { trendIcon = 'ph-minus'; trendColor = 'text-slate-500 bg-slate-100'; trendText = 'Sama dengan rata-rata'; }
-                } else { trendIcon = 'ph-minus'; trendColor = 'text-slate-500 bg-slate-100'; trendText = 'Belum ada data historis'; }
-
-                const bookCounts = {};
-                db.lib_loans.forEach(l => { bookCounts[l.bookId] = (bookCounts[l.bookId] || 0) + 1; });
-                const topBooks = Object.keys(bookCounts)
-                    .map(id => ({ id, title: db.lib_books.find(b=>b.id===id)?.title || 'Unknown', count: bookCounts[id] }))
-                    .sort((a,b) => b.count - a.count).slice(0, 5);
-                const totalLoans = db.lib_loans.length;
-
-                const roomStats = {};
-                db.gear_reqs.filter(r => r.status === 'Disetujui').forEach(r => {
-                    const item = db.gear_items.find(i=>i.id===r.itemId);
-                    if(item && item.type === 'ruang') {
-                        if(!roomStats[r.itemId]) roomStats[r.itemId] = { name: item.name, count: 0, duration: 0 };
-                        roomStats[r.itemId].count += 1;
-                        roomStats[r.itemId].duration += (r.end - r.start) / (1000 * 60 * 60); 
-                    }
-                });
-                const topRooms = Object.values(roomStats).sort((a,b) => b.count - a.count);
-
-                html += `
-                <div class="mb-4">
-                    <h2 class="text-xl font-bold text-dark flex items-center gap-2 border-b border-slate-200 pb-2"><i class="ph ph-chart-polar text-primary"></i> Decision Support Analytics</h2>
-                </div>
+            setTimeout(() => {
+                // Change text and fade in
+                currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
+                quoteText.textContent = `"${quotes[currentQuoteIndex].text}"`;
+                quoteAuthor.textContent = `— ${quotes[currentQuoteIndex].author}`;
                 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-center relative overflow-hidden">
-                        <div class="absolute -right-4 -bottom-4 opacity-5"><i class="ph ph-pulse text-9xl"></i></div>
-                        <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Insiden Kesehatan Hari Ini</h3>
-                        <div class="flex items-end gap-3"><span class="text-5xl font-black text-dark">${medToday}</span><span class="text-sm text-slate-500 mb-1">Kasus</span></div>
-                        <div class="mt-4 flex items-center gap-2 text-sm font-medium"><span class="px-2 py-1 rounded-md flex items-center gap-1 ${trendColor}"><i class="ph ${trendIcon} font-bold"></i> ${medToday} vs ${medAvg}</span><span class="text-slate-500 text-xs">${trendText}</span></div>
-                    </div>
-                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
-                        <div class="w-1/2">
-                            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Distribusi Tingkat Kerusakan (SCHOO-FIX)</h3>
-                            <p class="text-xs text-slate-500 mb-4">Membantu memprioritaskan anggaran *maintenance* berdasarkan profil urgensi historis laporan.</p>
-                            <div class="flex gap-4">
-                                <div><p class="text-2xl font-bold text-dark">${db.fix.length}</p><p class="text-xs font-bold text-slate-400">Total Laporan</p></div>
-                                <div><p class="text-2xl font-bold text-red-500">${db.fix.filter(f=>f.urgency==='Kritis').length}</p><p class="text-xs font-bold text-red-400">Kritis</p></div>
-                            </div>
-                        </div>
-                        <div class="w-1/2 h-40 relative flex justify-end"><canvas id="fixChart"></canvas></div>
-                    </div>
-                </div>
+                quoteContainer.classList.remove('opacity-0', 'translate-y-4');
+                quoteContainer.classList.add('opacity-100', 'translate-y-0');
+            }, 500); 
+            
+        }, 5000); // Change quote every 5 seconds
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                        <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">Buku Paling Diminati (Top 5)</h3>
-                        <ul class="space-y-3">
-                            ${topBooks.length === 0 ? '<p class="text-sm text-slate-400">Belum ada data peminjaman.</p>' : topBooks.map((b, idx) => `
-                            <li class="flex items-center justify-between group">
-                                <div class="flex items-center gap-3">
-                                    <span class="w-6 h-6 rounded bg-slate-100 text-slate-500 text-xs font-bold flex items-center justify-center">${idx + 1}</span>
-                                    <span class="text-sm font-semibold text-dark truncate max-w-[200px] group-hover:text-primary transition-colors">${b.title}</span>
-                                </div>
-                                <div class="flex items-center gap-3">
-                                    <span class="text-xs font-bold text-slate-500">${b.count}x dipinjam</span>
-                                    <div class="w-16 h-2 bg-slate-100 rounded-full overflow-hidden">
-                                        <div class="h-full bg-primary rounded-full" style="width: ${(b.count/totalLoans)*100}%"></div>
-                                    </div>
-                                </div>
-                            </li>`).join('')}
-                        </ul>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                        <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">Utilisasi Ruangan Tertinggi</h3>
-                        <ul class="space-y-3">
-                            ${topRooms.length === 0 ? '<p class="text-sm text-slate-400">Belum ada ruangan dibooking.</p>' : topRooms.map((r, idx) => `
-                            <li class="flex flex-col p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-slate-300 transition-colors">
-                                <div class="flex justify-between items-center mb-1">
-                                    <span class="text-sm font-bold text-dark flex items-center gap-2"><i class="ph ph-door text-slate-400"></i> ${r.name}</span>
-                                    <span class="text-xs font-bold text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded">${r.count} Booking</span>
-                                </div>
-                                <div class="flex justify-between items-center text-xs text-slate-500">
-                                    <span>Total Waktu Penggunaan Historis:</span><span class="font-bold text-dark">${r.duration.toFixed(1)} Jam</span>
-                                </div>
-                            </li>`).join('')}
-                        </ul>
-                    </div>
-                </div>`;
+        // 4. Dark Mode Toggle Logic
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const darkIcon = document.getElementById('theme-toggle-dark-icon');
+        const lightIcon = document.getElementById('theme-toggle-light-icon');
+        const htmlElement = document.documentElement;
 
-                setTimeout(() => {
-                    if (chartInstance) chartInstance.destroy();
-                    const ctx = document.getElementById('fixChart');
-                    if(ctx) {
-                        const r = db.fix.filter(f=>f.urgency==='Rendah').length;
-                        const t = db.fix.filter(f=>f.urgency==='Tinggi').length;
-                        const k = db.fix.filter(f=>f.urgency==='Kritis').length;
-                        chartInstance = new Chart(ctx, {
-                            type: 'doughnut',
-                            data: { labels: ['Rendah', 'Tinggi', 'Kritis'], datasets: [{ data: [r, t, k], backgroundColor: ['#3b82f6', '#f59e0b', '#ef4444'], borderWidth: 0, hoverOffset: 4 }] },
-                            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: {family: 'Poppins', size: 10} } } }, cutout: '70%' }
-                        });
-                    }
-                }, 0);
+        // Check LocalStorage or system preference on load
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            htmlElement.classList.add('dark');
+            lightIcon.classList.remove('hidden'); // Show sun icon
+        } else {
+            htmlElement.classList.remove('dark');
+            darkIcon.classList.remove('hidden'); // Show moon icon
+        }
+
+        themeToggleBtn.addEventListener('click', function() {
+            // toggle icons inside button
+            darkIcon.classList.toggle('hidden');
+            lightIcon.classList.toggle('hidden');
+
+            // if is dark mode, change to light
+            if (htmlElement.classList.contains('dark')) {
+                htmlElement.classList.remove('dark');
+                localStorage.setItem('color-theme', 'light');
             } else {
-                html += `
-                <div class="bg-gradient-to-br from-primary to-secondary rounded-3xl shadow-lg p-8 text-white relative overflow-hidden group">
-                    <div class="absolute -right-10 -top-10 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000"></div>
-                    <div class="relative z-10">
-                        <h3 class="text-2xl font-bold mb-3 tracking-tight">Selamat Datang di SCHOOFAST v2.3</h3>
-                        <p class="text-primary-100 text-lg max-w-2xl leading-relaxed">Platform layanan terpadu berbasis <span class="font-bold text-white">*On-Demand*</span> untuk menunjang efektivitas kegiatan operasional sekolah secara cerdas dan cepat.</p>
-                        <button onclick="navigate('lib')" class="mt-6 px-6 py-3 bg-white text-primary font-bold rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all">Jelajahi Perpustakaan</button>
-                    </div>
-                </div>`;
+                // if is light mode, change to dark
+                htmlElement.classList.add('dark');
+                localStorage.setItem('color-theme', 'dark');
             }
-            container.innerHTML = html;
-        }
+        });
 
-        /**
-         * 6. MODUL TRANSAKSI (FSM, Validasi, Algoritma TIDAK DIUBAH SAMA SEKALI)
-         */
-        function renderMed(container) {
-            const db = getDB(); let html = '';
-            if (currentUser.role === 'siswa') {
-                const myReqs = db.med.filter(m => m.userId === currentUser.id);
-                html += `
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8"><div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-slate-100"><h3 class="text-lg font-bold text-dark mb-5 flex items-center gap-2"><div class="w-8 h-8 rounded-lg bg-red-100 text-red-500 flex items-center justify-center"><i class="ph ph-plus-circle text-xl"></i></div> Panggil PMR</h3><form onsubmit="submitMed(event)" class="space-y-5"><div><label class="block text-sm font-semibold mb-2">Lokasi Kejadian</label><select id="med-loc" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary outline-none"><option value="">-- Pilih Lokasi --</option><option value="Lapangan Basket">Lapangan Basket</option><option value="Kelas 12 IPA 1">Kelas 12 IPA 1</option><option value="Kantin">Kantin</option><option value="Laboratorium">Laboratorium</option></select></div><div><label class="block text-sm font-semibold mb-2">Tingkat Urgensi</label><div class="space-y-3"><label class="flex items-center gap-3 p-3 border border-slate-200 bg-slate-50 rounded-xl cursor-pointer hover:bg-white transition-all group"><input type="radio" name="med-severity" value="1" required class="w-5 h-5 text-indigo-600 focus:ring-indigo-500"><div><span class="font-bold text-dark">Ringan</span> <span class="text-xs text-slate-500 block">Pusing, Luka Lecet</span></div></label><label class="flex items-center gap-3 p-3 border border-slate-200 bg-slate-50 rounded-xl cursor-pointer hover:bg-white transition-all group"><input type="radio" name="med-severity" value="2" class="w-5 h-5 text-amber-500 focus:ring-amber-500"><div><span class="font-bold text-dark">Sedang</span> <span class="text-xs text-slate-500 block">Demam Tinggi, Mimisan</span></div></label><label class="flex items-center gap-3 p-3 border border-slate-200 bg-slate-50 rounded-xl cursor-pointer hover:bg-white transition-all group"><input type="radio" name="med-severity" value="3" class="w-5 h-5 text-red-600 focus:ring-red-600"><div><span class="font-bold text-dark">Berat</span> <span class="text-xs text-slate-500 block">Pingsan, Patah Tulang</span></div></label></div></div><button type="submit" class="w-full py-3.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-md transition-all mt-4 flex justify-center items-center gap-2"><i class="ph ph-siren text-xl"></i> Kirim SOS Darurat</button></form></div><div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100"><h3 class="text-lg font-bold text-dark mb-5">Riwayat Panggilan Saya</h3>${generateTable(['ID', 'Waktu', 'Lokasi', 'Status'], myReqs.map(r => [r.id, formatDate(r.timestamp), r.location, getStatusBadge(r.status)]))}</div></div>`;
-            } else {
-                const activeReqs = db.med.filter(m => m.status !== 'Selesai').sort((a, b) => { if (b.severity !== a.severity) return b.severity - a.severity; return a.timestamp - b.timestamp; });
-                html += `
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"><h3 class="text-lg font-bold mb-6 text-red-500 flex items-center gap-2"><div class="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center animate-pulse"><i class="ph ph-warning-circle text-xl"></i></div> Antrian Prioritas FSM (Real-Time)</h3><div class="overflow-x-auto custom-scrollbar pb-2"><table class="w-full text-left text-sm whitespace-nowrap"><thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-xs"><tr><th class="p-4 font-bold rounded-tl-xl">Tingkat</th><th class="p-4 font-bold">Pasien & Lokasi</th><th class="p-4 font-bold">Waktu Masuk</th><th class="p-4 font-bold">Status</th><th class="p-4 font-bold text-right rounded-tr-xl">Aksi</th></tr></thead><tbody class="divide-y divide-slate-100">${activeReqs.length === 0 ? '<tr><td colspan="5" class="p-8 text-center text-slate-400 font-medium">Tidak ada antrian darurat saat ini.</td></tr>' : activeReqs.map(r => { const sev = r.severity == 3 ? '<span class="px-3 py-1 bg-red-100 text-red-600 rounded-lg font-bold border border-red-200 flex w-max items-center gap-1"><i class="ph ph-warning"></i> Berat</span>' : (r.severity == 2 ? '<span class="px-3 py-1 bg-amber-100 text-amber-600 rounded-lg font-bold border border-amber-200 flex w-max items-center gap-1"><i class="ph ph-warning-circle"></i> Sedang</span>' : '<span class="px-3 py-1 bg-indigo-100 text-indigo-600 rounded-lg font-bold border border-indigo-200 flex w-max items-center gap-1"><i class="ph ph-info"></i> Ringan</span>'); return `<tr class="hover:bg-slate-50"><td class="p-4">${sev}</td><td class="p-4"><div class="font-bold text-dark">${r.name}</div><div class="text-xs text-slate-500">${r.location}</div></td><td class="p-4 text-slate-600">${formatDate(r.timestamp)}</td><td class="p-4">${getStatusBadge(r.status)}</td><td class="p-4 text-right">${r.status === 'Menunggu' ? `<button onclick="updateMedStatus('${r.id}', 'Diproses')" class="px-4 py-2 bg-blue-500 text-white text-xs font-bold rounded-xl shadow hover:bg-blue-600">Tindak Lanjuti</button>` : ''} ${r.status === 'Diproses' ? `<button onclick="updateMedStatus('${r.id}', 'Selesai')" class="px-4 py-2 bg-emerald-500 text-white text-xs font-bold rounded-xl shadow hover:bg-emerald-600">Selesai</button>` : ''}</td></tr>`; }).join('')}</tbody></table></div></div>`;
-            } container.innerHTML = html;
-        }
-        function submitMed(e) { e.preventDefault(); const db = getDB(); db.med.push({ id: generateId('MED'), userId: currentUser.id, name: currentUser.name, location: document.getElementById('med-loc').value, severity: parseInt(document.querySelector('input[name="med-severity"]:checked').value), status: 'Menunggu', timestamp: Date.now() }); saveDB(db); showToast('Panggilan darurat terkirim!', 'success'); renderMed(document.getElementById('main-content')); }
-        function updateMedStatus(id, newStatus) { const db = getDB(); const req = db.med.find(m => m.id === id); if(req) { req.status = newStatus; saveDB(db); showToast(`Status diperbarui.`); renderMed(document.getElementById('main-content')); } }
-
-        function renderLib(container) {
-            const db = getDB(); let html = '';
-            if(currentUser.role === 'siswa') {
-                const myLoans = db.lib_loans.filter(l => l.userId === currentUser.id);
-                html += `<div class="mb-8"><h3 class="text-xl font-bold text-dark mb-6 flex items-center gap-3"><div class="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center"><i class="ph ph-books text-2xl"></i></div> Katalog Perpustakaan</h3><div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">${db.lib_books.map(b => { const isOut = b.stock === 0; return `<div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between relative overflow-hidden">${isOut ? '<div class="absolute top-4 right-4 bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded-md border border-red-200 z-10">Habis</div>' : ''}<div><div class="w-full h-40 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl mb-4 flex items-center justify-center text-slate-400 border border-slate-200/50 relative overflow-hidden"><i class="ph ph-book-open-text text-6xl relative z-10"></i></div><h4 class="font-bold text-dark text-lg leading-tight line-clamp-2">${b.title}</h4><p class="text-sm text-slate-500 mt-1 flex items-center gap-1"><i class="ph ph-pen-nib"></i> ${b.author}</p><div class="flex items-center gap-2 mt-3 mb-2"><span class="text-xs font-bold px-2 py-1 bg-slate-100 text-slate-600 rounded-md border border-slate-200">${b.category}</span><span class="text-xs font-bold px-2 py-1 ${isOut?'bg-red-50 text-red-600 border-red-200':'bg-emerald-50 text-emerald-600 border-emerald-200'} rounded-md border">Stok: ${b.stock}/${b.total}</span></div></div><button onclick="requestBook('${b.id}')" ${isOut?'disabled':''} class="mt-4 w-full py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 ${isOut?'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200':'bg-primary hover:bg-indigo-600 text-white shadow-md'}">${isOut?'Tidak Tersedia':'<i class="ph ph-hand-grabbing"></i> Pinjam Buku'}</button></div>`; }).join('')}</div></div><div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"><h3 class="text-lg font-bold text-dark mb-4">Aktivitas Peminjaman Saya</h3>${generateTable(['ID', 'Judul Buku', 'Tanggal', 'Status'], myLoans.map(l => { const book = db.lib_books.find(b => b.id === l.bookId); return [l.id, book ? `<span class="font-bold">${book.title}</span>` : '-', formatDate(l.date), getStatusBadge(l.status)]; }))}</div>`;
-            } else {
-                const activeLoans = db.lib_loans.filter(l => l.status !== 'Dikembalikan');
-                html += `<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"><h3 class="text-lg font-bold mb-6 flex items-center gap-2"><div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center"><i class="ph ph-arrows-left-right text-xl"></i></div> Manajemen Sirkulasi</h3>${generateTable(['ID Transaksi', 'Pengguna', 'Buku', 'Status FSM', 'Tindakan'], activeLoans.map(l => { const book = db.lib_books.find(b => b.id === l.bookId); const user = db.users.find(u => u.id === l.userId); const btn = l.status === 'Diajukan' ? `<button onclick="updateLibStatus('${l.id}', 'Dipinjam')" class="px-4 py-2 bg-indigo-500 text-white text-xs font-bold rounded-xl">Berikan Buku</button>` : (l.status === 'Dipinjam' ? `<button onclick="updateLibStatus('${l.id}', 'Dikembalikan')" class="px-4 py-2 bg-emerald-500 text-white text-xs font-bold rounded-xl">Terima Pengembalian</button>` : ''); return [`<span class="font-mono text-xs">${l.id}</span>`, `<span class="font-semibold">${user?user.name:l.userId}</span>`, book?book.title:'-', getStatusBadge(l.status), btn]; }))}</div>`;
-            } container.innerHTML = html;
-        }
-        function requestBook(bookId) { const db = getDB(); const bookIndex = db.lib_books.findIndex(b => b.id === bookId); if(bookIndex !== -1 && db.lib_books[bookIndex].stock > 0) { db.lib_books[bookIndex].stock -= 1; db.lib_loans.push({ id: generateId('LIB'), bookId: bookId, userId: currentUser.id, status: 'Diajukan', date: Date.now() }); saveDB(db); showToast('Pengajuan sukses!', 'success'); renderLib(document.getElementById('main-content')); } else showToast('Stok habis.', 'error'); }
-        function updateLibStatus(loanId, newStatus) { const db = getDB(); const loan = db.lib_loans.find(l => l.id === loanId); if(loan) { loan.status = newStatus; if(newStatus === 'Dikembalikan') { const book = db.lib_books.find(b => b.id === loan.bookId); if(book) book.stock += 1; } saveDB(db); showToast(`Status perpus diupdate.`); renderLib(document.getElementById('main-content')); } }
-
-        function renderFix(container) {
-            const db = getDB(); let html = '';
-            if(currentUser.role === 'siswa') {
-                html += `<div class="grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8"><div class="xl:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-slate-100"><h3 class="text-lg font-bold text-dark mb-5 flex items-center gap-2"><div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-500 flex items-center justify-center"><i class="ph ph-hammer text-xl"></i></div> Lapor Kerusakan</h3><form onsubmit="submitFix(event)" class="space-y-4"><div><label class="block text-sm font-semibold mb-1">Objek Rusak</label><input type="text" id="fix-item" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary outline-none"></div><div><label class="block text-sm font-semibold mb-1">Lokasi</label><input type="text" id="fix-loc" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary outline-none"></div><div><label class="block text-sm font-semibold mb-1">Urgensi</label><select id="fix-urgency" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary outline-none"><option value="Rendah">Rendah</option><option value="Tinggi">Tinggi</option><option value="Kritis">Kritis</option></select></div><button type="submit" class="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-md transition-all mt-2">Kirim Laporan</button></form></div><div class="xl:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100"><h3 class="text-lg font-bold text-dark mb-5">Laporan Saya</h3>${generateTable(['ID', 'Objek', 'Urgensi', 'Status'], db.fix.filter(f=>f.userId===currentUser.id).map(f => [f.id, f.item, f.urgency, getStatusBadge(f.status)]))}</div></div>`;
-            } else {
-                html += `<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"><h3 class="text-lg font-bold mb-5 flex items-center gap-2"><i class="ph ph-list-dashes text-primary text-2xl"></i> Manajemen Perbaikan FSM</h3>${generateTable(['ID', 'Objek & Lokasi', 'Urgensi', 'Status Saat Ini', 'Update Progress'], db.fix.map(f => [f.id, `<span class="font-bold">${f.item}</span> <span class="block text-xs">${f.location}</span>`, f.urgency==='Kritis'?'<span class="text-red-500 font-bold">🔴 Kritis</span>':(f.urgency==='Tinggi'?'<span class="text-amber-500 font-bold">🟠 Tinggi</span>':'<span class="text-blue-500 font-bold">🔵 Rendah</span>'), getStatusBadge(f.status), `<select onchange="updateFixStatus('${f.id}', this.value)" class="p-2 border border-slate-200 rounded-lg text-xs bg-white"><option value="" disabled selected>Pindah Status...</option><option value="Menunggu Review">Menunggu</option><option value="Masuk Antrian Perbaikan">Masuk Antrian</option><option value="Sedang Diperbaiki">Diperbaiki</option><option value="Selesai">Selesai</option></select>`]))}</div>`;
-            } container.innerHTML = html;
-        }
-        function submitFix(e) { e.preventDefault(); const db = getDB(); db.fix.push({ id: generateId('FIX'), userId: currentUser.id, item: document.getElementById('fix-item').value, location: document.getElementById('fix-loc').value, urgency: document.getElementById('fix-urgency').value, status: 'Menunggu Review' }); saveDB(db); showToast('Laporan tercatat.'); renderFix(document.getElementById('main-content')); }
-        function updateFixStatus(id, stat) { const db = getDB(); const rep = db.fix.find(f => f.id === id); if(rep) { rep.status = stat; saveDB(db); showToast(`Status diperbarui.`); renderFix(document.getElementById('main-content')); } }
-
-        function renderGear(container) {
-            const db = getDB(); let html = '';
-            if(currentUser.role === 'siswa') {
-                html += `<div class="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8"><div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"><h3 class="text-lg font-bold text-dark mb-5 flex items-center gap-2"><div class="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center"><i class="ph ph-projector-screen text-xl"></i></div> Booking Ruang/Alat</h3><form onsubmit="submitGear(event)" class="space-y-5"><div><label class="block text-sm font-semibold mb-1">Pilih Fasilitas</label><select id="gear-item" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary cursor-pointer">${db.gear_items.map(i => `<option value="${i.id}">${i.name} (${i.type.toUpperCase()})</option>`).join('')}</select></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-sm font-semibold mb-1">Mulai</label><input type="datetime-local" id="gear-start" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary"></div><div><label class="block text-sm font-semibold mb-1">Selesai</label><input type="datetime-local" id="gear-end" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary"></div></div><button type="submit" class="w-full py-3.5 bg-dark hover:bg-slate-800 text-white rounded-xl font-bold shadow-lg mt-2">Cek Jadwal & Booking</button></form></div><div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"><h3 class="text-lg font-bold text-dark mb-5">Jadwal Aktif (Public)</h3><ul class="space-y-3">${db.gear_reqs.filter(r=>r.status==='Disetujui').map(r => { const item = db.gear_items.find(i=>i.id===r.itemId); return `<li class="p-4 bg-slate-50 border border-slate-200 rounded-xl flex justify-between"><span class="font-bold text-dark text-sm"><i class="ph ph-calendar-check text-primary"></i> ${item.name}</span><span class="text-slate-500 font-medium text-xs bg-white px-2 py-1 rounded-lg border border-slate-200">${new Date(r.start).toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})} - ${new Date(r.end).toLocaleString([],{hour:'2-digit',minute:'2-digit'})}</span></li>`; }).join('') || '<div class="text-center p-8 text-slate-400 text-sm border-2 border-dashed border-slate-200 rounded-xl">Belum ada jadwal.</div>'}</ul></div></div>`;
-            } else {
-                html += `<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"><h3 class="text-lg font-bold mb-5 flex items-center gap-2"><i class="ph ph-calendar text-primary text-2xl"></i> Approval Peminjaman</h3>${generateTable(['ID', 'Fasilitas', 'Waktu', 'Status', 'Aksi'], db.gear_reqs.map(r => { const item = db.gear_items.find(i=>i.id===r.itemId); const time = `${new Date(r.start).toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})} - ${new Date(r.end).toLocaleString([],{hour:'2-digit',minute:'2-digit'})}`; const action = r.status === 'Diajukan' ? `<button onclick="updateGearStatus('${r.id}', 'Disetujui')" class="px-3 py-1.5 bg-emerald-100 text-emerald-700 font-bold rounded-lg text-xs mr-1">Approve</button><button onclick="updateGearStatus('${r.id}', 'Ditolak')" class="px-3 py-1.5 bg-red-100 text-red-700 font-bold rounded-lg text-xs">Reject</button>` : '-'; return [r.id, `<span class="font-bold">${item.name}</span>`, time, getStatusBadge(r.status), action]; }))}</div>`;
-            } container.innerHTML = html;
-        }
-        function submitGear(e) { e.preventDefault(); const db = getDB(); const itemId = document.getElementById('gear-item').value; const reqStart = new Date(document.getElementById('gear-start').value).getTime(); const reqEnd = new Date(document.getElementById('gear-end').value).getTime(); if(reqStart >= reqEnd) { showToast('Waktu selesai salah!', 'error'); return; } const isConflict = db.gear_reqs.some(exist => { if(exist.itemId === itemId && exist.status === 'Disetujui') { return (reqStart < exist.end) && (reqEnd > exist.start); } return false; }); if(isConflict) { showToast('Gagal! Jadwal bentrok.', 'error'); } else { db.gear_reqs.push({ id: generateId('GER'), itemId, start: reqStart, end: reqEnd, status: 'Diajukan' }); saveDB(db); showToast('Pengajuan sukses.', 'success'); renderGear(document.getElementById('main-content')); } }
-        function updateGearStatus(id, stat) { const db = getDB(); const r = db.gear_reqs.find(x => x.id === id); if(r) { r.status = stat; saveDB(db); showToast(`Pengajuan ${stat}.`); renderGear(document.getElementById('main-content')); } }
-
-        const ADM_STEPS = ['Draft', 'Review TU', 'Approv Wakasek', 'Approv Kepsek', 'Dokumen Siap'];
-        function renderAdm(container) {
-            const db = getDB(); let html = '';
-            if(currentUser.role === 'siswa') {
-                html += `<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8"><h3 class="text-lg font-bold text-dark mb-5 flex items-center gap-2"><div class="w-8 h-8 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center"><i class="ph ph-envelope-simple text-xl"></i></div> Request Surat FSM</h3><form onsubmit="submitAdm(event)" class="flex gap-4 items-end"><div class="flex-1 w-full"><label class="block text-sm font-semibold mb-1">Jenis Surat</label><select id="adm-type" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none"><option>Surat Keterangan Aktif Siswa</option><option>Surat Pengantar Beasiswa</option><option>Surat Izin Observasi</option></select></div><div class="flex-1 w-full"><label class="block text-sm font-semibold mb-1">Keperluan</label><input type="text" id="adm-purp" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none"></div><button type="submit" class="py-3.5 px-8 bg-primary text-white rounded-xl font-bold shadow-md">Ajukan</button></form></div><div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"><h3 class="text-lg font-bold text-dark mb-5">Tracking Progress Dokumen</h3><div class="space-y-5">${db.adm.filter(a=>a.userId===currentUser.id).map(a => `<div class="border border-slate-200 rounded-xl p-5 bg-slate-50"><div class="flex justify-between items-center mb-4"><span class="font-bold text-dark">${a.type}</span><span class="font-mono text-xs text-slate-400 bg-white px-2 py-1 rounded border">${a.id}</span></div><div class="w-full bg-slate-200 rounded-full h-3 mb-3 overflow-hidden shadow-inner"><div class="bg-gradient-to-r from-primary to-secondary h-3 rounded-full transition-all duration-1000" style="width: ${(a.step / 4) * 100}%"></div></div><div class="flex justify-between items-center"><p class="text-xs text-slate-500 font-medium">${a.purpose}</p><p class="text-xs font-bold ${a.step===4?'text-emerald-500':'text-primary'} bg-white px-3 py-1.5 rounded-lg border">${ADM_STEPS[a.step]}</p></div></div>`).join('') || '<div class="text-center p-8 text-slate-400 font-medium">Belum ada dokumen diajukan.</div>'}</div></div>`;
-            } else {
-                html += `<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"><h3 class="text-lg font-bold mb-5 flex items-center gap-2"><i class="ph ph-file-text text-primary text-2xl"></i> Workflow FSM Persuratan</h3>${generateTable(['ID Surat', 'Jenis & Keperluan', 'Tahap FSM Saat Ini', 'Aksi Lanjut'], db.adm.map(a => { const btn = a.step < 4 ? `<button onclick="advanceAdm('${a.id}')" class="px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold shadow">Naik ke: ${ADM_STEPS[a.step+1]}</button>` : '<span class="text-emerald-500 font-bold bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">Tuntas</span>'; return [a.id, `<b>${a.type}</b><br><span class="text-xs text-slate-500">${a.purpose}</span>`, `<span class="px-3 py-1.5 bg-slate-100 rounded-lg border text-xs font-bold">${ADM_STEPS[a.step]}</span>`, btn]; }))}</div>`;
-            } container.innerHTML = html;
-        }
-        function submitAdm(e) { e.preventDefault(); const db = getDB(); db.adm.push({ id: generateId('ADM'), userId: currentUser.id, type: document.getElementById('adm-type').value, purpose: document.getElementById('adm-purp').value, step: 1 }); saveDB(db); showToast('Surat diajukan.'); renderAdm(document.getElementById('main-content')); }
-        function advanceAdm(id) { const db = getDB(); const a = db.adm.find(x => x.id === id); if(a && a.step < 4) { a.step += 1; saveDB(db); showToast(`Tahap naik ke: ${ADM_STEPS[a.step]}`); renderAdm(document.getElementById('main-content')); } }
-
-        function generateTable(headers, rows) { return `<div class="overflow-x-auto custom-scrollbar pb-2"><table class="w-full text-left text-sm whitespace-nowrap"><thead class="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500 tracking-wider"><tr>${headers.map((h,i) => `<th class="p-4 font-bold ${i===0?'rounded-tl-xl':''} ${i===headers.length-1?'rounded-tr-xl':''}">${h}</th>`).join('')}</tr></thead><tbody class="divide-y divide-slate-100">${rows.length === 0 ? `<tr><td colspan="${headers.length}" class="p-8 text-center text-slate-400 font-medium">Data kosong.</td></tr>` : rows.map(r => `<tr class="hover:bg-slate-50 transition-colors">${r.map(c => `<td class="p-4 text-slate-700">${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`; }
-
-        window.onload = () => { if(!localStorage.getItem(DB_KEY)) saveDB(initialDB); checkAuth(); };
     </script>
 </body>
 </html>
